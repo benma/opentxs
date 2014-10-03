@@ -155,6 +155,14 @@
 #include <cctype>
 #include <functional>
 
+
+#ifdef USING_GNUREADLINE
+extern "C" {
+#include <readline/readline.h>
+#include <readline/history.h>
+}
+#endif
+
 using namespace opentxs;
 using namespace std;
 
@@ -751,25 +759,41 @@ int Opentxs::run(int argc, char* argv[])
     if (opt.getArgc() != 0) {
         return processCommand(madeEasy, opt);
     }
-
     int lineNumber = 0;
     bool echoCommand = opt.getFlag("echocommand") || opt.getFlag("test");
     bool echoExpand = opt.getFlag("echoexpand") || opt.getFlag("test");
     bool noPrompt = opt.getFlag("noprompt") || opt.getFlag("test");
     int processed = 0;
     while (true) {
+#ifdef USING_GNUREADLINE
         // get next command line from input stream
+        char *input = readline(noPrompt ? "" : "opentxs> ");
+
+        // end of file stops processing commands
+        if(!input) {
+          break;
+        }
+        // Add input to history.
+        if(*input) {
+            add_history(input);
+        }
+ 
+        string cmd(input);
+        
+#else
         if (!noPrompt) {
             cout << "\nopentxs> ";
         }
+
         string cmd;
         getline(cin, cmd);
-
+        
         // end of file stops processing commands
         if (cin.eof()) {
             break;
         }
-
+#endif
+        
         lineNumber++;
 
         // quit/exit the command loop?

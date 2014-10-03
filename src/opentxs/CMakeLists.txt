@@ -23,7 +23,11 @@ else()
   add_executable(${MODULE_NAME} ${cxx-sources})
 endif()
 
-target_link_libraries(opentxs opentxs-client)
+if(NOT WIN32)
+add_definitions(-DUSING_GNUREADLINE)
+endif()
+
+target_link_libraries(opentxs opentxs-client ${Readline_LIBRARY})
 
 if(WIN32 AND NOT ZMQ_LIB_FOUND)
   add_custom_command(TARGET opentxs POST_BUILD

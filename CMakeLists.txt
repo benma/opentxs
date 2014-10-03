@@ -144,6 +144,12 @@ message(STATUS "C++ link flags:  ${CMAKE_CXX_LINK_FLAGS}")
 #-----------------------------------------------------------------------------
 # Third party libraries
 
+# put "Find*.cmake" files in cmake/modules 
+SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
+
+# used for the opentxs cli
+find_package(Readline REQUIRED)
+
 find_package(OpenSSL REQUIRED)
 find_package(Protobuf REQUIRED)
 find_package(ZLIB REQUIRED)
