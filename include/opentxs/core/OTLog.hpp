@@ -150,8 +150,14 @@
 #define PREDEF_MODE_DEBUG 1
 #endif
 
+#define TRACE(input, output) trace(input, output, __FILE__, __LINE__)
+#define TRACE_MESSAGE(input, output) trace_message(input, output, __FILE__, __LINE__)
+
 namespace opentxs
 {
+
+class OTData;
+
 
 typedef std::deque<String*> dequeOfStrings;
 
@@ -322,6 +328,25 @@ public:
                                              // it in xmlrpcxx_client.cpp just
                                              // above OT_Init.
 };
+
+std::string trace_to_string(const char *input);
+std::string trace_to_string(const std::string &input);
+std::string trace_to_string(const OTString &input);
+std::string trace_to_string(const OTData &input);
+
+template <class I, class O>
+void trace(const I &input, const O &output, const char* filename, int line) {
+    std::string input_str = trace_to_string(input);
+    std::string output_str = trace_to_string(output);
+    otErr << "TraceLine: " << input_str << ";" << output_str << ";" << filename << ":" << line << "\n";
+}
+
+//void trace(const OTString &input, const OTString &output, const char* filename, int line);
+//void trace(const std::string& input, const std::string& output, const char* filename, int line);
+//void trace(const OTData &input, const std::string &output, const char* filename, int line);
+//void trace(const std::string &input, const OTData &output, const char* filename, int line);
+void trace_message(const std::string &input, const std::string &output, const char* filename, int line);
+
 
 } // namespace opentxs
 

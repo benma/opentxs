@@ -609,6 +609,7 @@ bool OTASCIIArmor::SetAndPackData(const OTData& theData, bool bLineBreaks)
     }
 
     if (nullptr != pString) {
+        TRACE(theData, pString);
         Set(pString);
         delete[] pString;
         pString = nullptr;
@@ -686,6 +687,7 @@ bool OTASCIIArmor::SetAndPackString(const String& strData,
             reinterpret_cast<const uint8_t*>((str_compressed.data())),
             static_cast<int32_t>(str_compressed.size()), bLineBreaks);
 
+        TRACE(strData, pString);
         if (pString) {
             Set(pString);
             delete[] pString;
