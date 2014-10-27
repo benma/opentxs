@@ -141,6 +141,8 @@ class AnyOption;
 namespace opentxs
 {
 
+class CmdBase;
+
 class Opentxs
 {
 public:
@@ -163,23 +165,15 @@ public:
         catLast = 10
     } Category;
 
-    typedef struct
-    {
-        const char* command;
-        int32_t (*function)();
-        Category category;
-        const char* helpText;
-    } CommandEntry;
-
 private:
-    void handleCommandLineArguments(int argc, char* argv[], AnyOption& opt);
+    void loadOptions(AnyOption& opt);
     const char* getOption(AnyOption& opt, const char* optionName,
                           const char* defaultName = nullptr);
     OTVariable* setGlobalVar(OT_ME& madeEasy, const std::string& name,
                              const std::string& value);
+    int opentxsCommand(const std::string& command, AnyOption& opt);
     int processCommand(OT_ME& madeEasy, AnyOption& opt);
-
-    int opentxsCommand(const std::string& command);
+    int runCommand(CmdBase& cmd);
 
     std::string& ltrim(std::string& s);
     std::string& rtrim(std::string& s);
@@ -187,14 +181,9 @@ private:
 
     const std::string spaces18 = "                  ";
 
-    std::string argArgs;
-    std::string argHisAcct;
-    std::string argHisNym;
-    std::string argHisPurse;
-    std::string argMyAcct;
-    std::string argMyNym;
-    std::string argMyPurse;
-    std::string argServer;
+    int newArgc;
+    char** newArgv;
+    bool expectFailure;
 };
 
 } // namespace opentxs
