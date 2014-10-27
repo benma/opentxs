@@ -188,4 +188,3 @@ int32_t CmdRefreshNym::run(string server, string mynym)
 
     return 1;
 }
-

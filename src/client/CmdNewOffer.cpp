@@ -349,4 +349,3 @@ int32_t CmdNewOffer::cleanMarketOfferList(
 
     return 1;
 }
-

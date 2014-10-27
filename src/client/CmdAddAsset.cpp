@@ -168,4 +168,3 @@ int32_t CmdAddAsset::run()
 
     return 1;
 }
-

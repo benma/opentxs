@@ -172,4 +172,3 @@ int32_t CmdAcceptAll::run(string myacct)
 
     return success ? 1 : -1;
 }
-

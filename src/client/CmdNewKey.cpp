@@ -166,4 +166,3 @@ int32_t CmdNewKey::run()
 
     return 1;
 }
-

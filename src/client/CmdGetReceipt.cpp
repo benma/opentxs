@@ -204,4 +204,3 @@ int32_t CmdGetReceipt::run(string server, string mynym, string myacct,
         MadeEasy::get_box_receipt(server, mynym, myacct, type, id);
     return processResponse(response, "get box receipt");
 }
-

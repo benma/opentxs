@@ -182,4 +182,3 @@ int32_t CmdIssueAsset::run(string server, string mynym)
     string response = MadeEasy::issue_asset_type(server, mynym, contract);
     return processResponse(response, "issue asset contract");
 }
-

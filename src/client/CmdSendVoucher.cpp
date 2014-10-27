@@ -193,4 +193,3 @@ int32_t CmdSendVoucher::run(string myacct, string hisnym, string amount,
 
     return sendPayment(voucher, sender, "send voucher");
 }
-

@@ -208,4 +208,3 @@ int32_t CmdShowMyOffers::run(string server, string mynym)
 
     return 1;
 }
-

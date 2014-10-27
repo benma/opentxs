@@ -172,4 +172,3 @@ int32_t CmdWriteCheque::run(string myacct, string hisnym, string amount,
 
     return 1;
 }
-

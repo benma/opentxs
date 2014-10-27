@@ -240,4 +240,3 @@ int32_t CmdInbox::run(string myacct)
 
     return 1;
 }
-

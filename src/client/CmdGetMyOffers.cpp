@@ -174,4 +174,3 @@ int32_t CmdGetMyOffers::run(string server, string mynym)
     CmdShowMyOffers showMyOffers;
     return showMyOffers.run(server, mynym);
 }
-

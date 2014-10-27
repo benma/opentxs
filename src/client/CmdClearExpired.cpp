@@ -173,4 +173,3 @@ int32_t CmdClearExpired::run(string server, string mynym)
 
     return 1;
 }
-

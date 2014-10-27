@@ -386,7 +386,7 @@ void Opentxs::loadOptions(AnyOption& opt)
     opt.processFile(iniFileExact.Get());
 }
 
-int Opentxs::opentxsCommand(const string& command, AnyOption& opt)
+int Opentxs::opentxsCommand(const string& command)
 {
     if ("exit" == command || "quit" == command) {
         return -2;
@@ -447,7 +447,7 @@ int Opentxs::opentxsCommand(const string& command, AnyOption& opt)
     return -1;
 }
 
-int Opentxs::processCommand(OT_ME& madeEasy, AnyOption& opt)
+int Opentxs::processCommand(AnyOption& opt)
 {
     string command = opt.getArgv(0);
     for (int32_t i = 0; cmds[i] != nullptr; i++) {
@@ -496,7 +496,7 @@ int Opentxs::run(int argc, char* argv[])
     // is there a command on the command line?
     if (opt.getArgc() != 0) {
         expectFailure = false;
-        return processCommand(madeEasy, opt);
+        return processCommand(opt);
     }
 
     int lineNumber = 0;
@@ -753,7 +753,7 @@ int Opentxs::run(int argc, char* argv[])
         opt.processCommandArgs(newArgc, newArgv);
 
         cout << "\n";
-        if (expectFailure != (0 != processCommand(madeEasy, opt))) {
+        if (expectFailure != (0 != processCommand(opt))) {
             errorLineNumbers.push_back(lineNumber);
             errorCommands.push_back(originalCmd);
             otOut << "\n\n***ERROR***\n"

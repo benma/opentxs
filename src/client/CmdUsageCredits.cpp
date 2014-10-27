@@ -208,4 +208,3 @@ int32_t CmdUsageCredits::run(string server, string mynym, string hisnym,
     otOut << "Nym currently has " << balance << " usage credits.";
     return 1;
 }
-

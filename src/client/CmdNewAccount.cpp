@@ -181,4 +181,3 @@ int32_t CmdNewAccount::run(string server, string mynym, string mypurse)
     string response = MadeEasy::create_asset_acct(server, mynym, mypurse);
     return processResponse(response, "create asset account");
 }
-

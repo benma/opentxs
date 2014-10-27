@@ -373,4 +373,3 @@ int32_t CmdBaseAccept::acceptFromPaymentbox(const string& myacct,
 
     return 1;
 }
-

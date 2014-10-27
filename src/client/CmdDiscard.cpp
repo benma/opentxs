@@ -224,4 +224,3 @@ int32_t CmdDiscard::run(string server, string mynym, string indices)
 
     return retVal;
 }
-

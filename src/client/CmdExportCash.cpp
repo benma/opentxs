@@ -273,4 +273,3 @@ string CmdExportCash::exportCash(const string& server, const string& mynym,
     return MadeEasy::exportCashPurse(server, assetType, mynym, instrument,
                                      tokens, hisnym, hasPassword, retainedCopy);
 }
-

@@ -168,4 +168,3 @@ int32_t CmdRegisterNym::run(string server, string mynym)
     string response = MadeEasy::register_nym(server, mynym);
     return processResponse(response, "register nym");
 }
-

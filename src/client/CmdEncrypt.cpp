@@ -178,4 +178,3 @@ int32_t CmdEncrypt::run(string mynym)
 
     return 1;
 }
-

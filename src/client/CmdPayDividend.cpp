@@ -206,4 +206,3 @@ int32_t CmdPayDividend::run(string myacct, string hispurse, string amount,
 
     return 1;
 }
-

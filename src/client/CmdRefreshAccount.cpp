@@ -179,4 +179,3 @@ int32_t CmdRefreshAccount::run(string myacct)
 
     return 1;
 }
-

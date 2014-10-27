@@ -173,4 +173,3 @@ int32_t CmdCheckNym::run(string server, string mynym, string hisnym)
     string response = MadeEasy::check_user(server, mynym, hisnym);
     return processResponse(response, "check nym");
 }
-

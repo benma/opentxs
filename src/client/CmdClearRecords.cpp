@@ -183,4 +183,3 @@ int32_t CmdClearRecords::run(string myacct)
 
     return success ? 1 : -1;
 }
-

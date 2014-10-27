@@ -208,4 +208,3 @@ int32_t CmdNewNym::run(string keybits, string label, string source,
 
     return 1;
 }
-

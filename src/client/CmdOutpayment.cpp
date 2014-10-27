@@ -266,4 +266,3 @@ bool CmdOutpayment::showOutpayment(const string& mynym, int32_t index,
 
     return true;
 }
-

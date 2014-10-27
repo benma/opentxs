@@ -251,4 +251,3 @@ int32_t CmdWithdrawVoucher::run(string myacct, string hisnym, string amount,
 
     return 1;
 }
-

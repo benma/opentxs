@@ -188,4 +188,3 @@ int32_t CmdSignContract::run(string mynym, string type)
 
     return 1;
 }
-

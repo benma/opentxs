@@ -421,8 +421,7 @@ int32_t CmdConfirm::confirmSmartContract(const string& server,
     }
 
     if (0 < accounts) {
-        if (!confirmAccounts(server, mynym, myacct, contract, name, accounts,
-                             index)) {
+        if (!confirmAccounts(server, mynym, myacct, contract, name, accounts)) {
             return -1;
         }
     }
@@ -465,8 +464,7 @@ int32_t CmdConfirm::confirmSmartContract(const string& server,
 
     if (OTAPI_Wrap::Smart_AreAllPartiesConfirmed(confirmed)) {
         // If you are the last party to sign, then ACTIVATE THE SMART CONTRACT.
-        return activateContract(server, mynym, myacct, confirmed, name,
-                                accounts);
+        return activateContract(server, mynym, confirmed, name, accounts);
     }
 
     // NOTE: No matter which party you are (perhaps you are the middle one),
@@ -491,7 +489,6 @@ int32_t CmdConfirm::confirmSmartContract(const string& server,
 }
 
 int32_t CmdConfirm::activateContract(const string& server, const string& mynym,
-                                     const string& myacct,
                                      const string& contract, const string& name,
                                      int32_t accounts)
 {
@@ -649,7 +646,7 @@ int32_t CmdConfirm::sendToNextParty(const string& server, const string& mynym,
 
 int32_t CmdConfirm::confirmAccounts(string server, string mynym, string myacct,
                                     string contract, const string& name,
-                                    int32_t accounts, int32_t index)
+                                    int32_t accounts)
 {
     map<string, string> mapIDs;
     map<string, string> mapAgents;

@@ -170,4 +170,3 @@ int32_t CmdExportNym::run(string mynym)
     cout << exportedNym << "\n";
     return 1;
 }
-

@@ -247,4 +247,3 @@ int32_t CmdShowPurse::run(string server, string mynym, string mypurse)
 
     return 1;
 }
-

@@ -172,4 +172,3 @@ int32_t CmdSendInvoice::run(string myacct, string hisnym, string amount,
 
     return sendPayment(cheque, "", "send invoice");
 }
-

@@ -178,4 +178,3 @@ int32_t CmdEditAccount::run(string myacct, string label)
 
     return 1;
 }
-

@@ -273,4 +273,3 @@ int32_t CmdShowRecords::showRecords(const string& server, const string& mynym,
 
     return 1;
 }
-

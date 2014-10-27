@@ -290,4 +290,3 @@ int32_t CmdNewBasket::run(string server, string mynym, string assets,
 
     return (0 == status) ? -1 : status;
 }
-

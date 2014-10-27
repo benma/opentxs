@@ -144,16 +144,16 @@ public:
     EXPORT CmdSendCash();
     virtual ~CmdSendCash();
 
-    EXPORT int32_t
-        run(std::string server, std::string mynym, std::string myacct,
-            std::string mypurse, std::string hisnym, std::string amount,
-            std::string indices, std::string password, std::string memo);
+    EXPORT int32_t run(std::string server, std::string mynym,
+                       std::string myacct, std::string mypurse,
+                       std::string hisnym, std::string amount,
+                       std::string indices, std::string password);
     EXPORT int32_t sendCash(std::string& response, const std::string& server,
                             const std::string& mynym,
                             const std::string& assetType,
                             const std::string& myacct, std::string& hisnym,
-                            const std::string& memo, const std::string& amount,
-                            std::string& indices, bool hasPassword) const;
+                            const std::string& amount, std::string& indices,
+                            bool hasPassword) const;
 
 protected:
     virtual int32_t runWithOptions();

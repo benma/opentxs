@@ -173,4 +173,3 @@ int32_t CmdEditAsset::run(string mypurse, string label)
 
     return 1;
 }
-

@@ -178,4 +178,3 @@ int32_t CmdShowAssets::run()
 
     return 1;
 }
-

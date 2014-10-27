@@ -176,4 +176,3 @@ int32_t CmdKillPlan::run(string server, string mynym, string myacct, string id)
     return processTxResponse(server, mynym, myacct, response,
                              "kill payment plan");
 }
-

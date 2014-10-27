@@ -180,4 +180,3 @@ int32_t CmdShowWallet::run()
 
     return success ? 1 : -1;
 }
-

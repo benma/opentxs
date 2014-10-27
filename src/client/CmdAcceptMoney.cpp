@@ -164,4 +164,3 @@ int32_t CmdAcceptMoney::run(string myacct)
     success |= 0 <= acceptFromPaymentbox(myacct, "all", "CHEQUE");
     return success ? 1 : -1;
 }
-

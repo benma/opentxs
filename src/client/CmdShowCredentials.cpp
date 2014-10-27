@@ -229,4 +229,3 @@ int32_t CmdShowCredentials::run(string mynym)
 
     return (0 == items + revokedItems) ? 0 : 1;
 }
-

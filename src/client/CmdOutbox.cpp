@@ -237,4 +237,3 @@ int32_t CmdOutbox::run(string myacct)
 
     return 1;
 }
-

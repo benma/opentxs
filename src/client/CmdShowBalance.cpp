@@ -183,4 +183,3 @@ int32_t CmdShowBalance::run(string myacct)
 
     return 1;
 }
-

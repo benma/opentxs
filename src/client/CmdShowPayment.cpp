@@ -268,4 +268,3 @@ int32_t CmdShowPayment::run(string server, string mynym, string index,
 
     return 1;
 }
-

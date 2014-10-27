@@ -248,4 +248,3 @@ string CmdShowCredential::findRevoked(const string& mynym, const string& subID)
 
     return "";
 }
-

@@ -305,4 +305,3 @@ int32_t CmdDeposit::depositPurse(const string& server, const string& myacct,
     return MadeEasy::depositCashPurse(server, assetType, mynym, instrument,
                                       tokens, myacct, true);
 }
-

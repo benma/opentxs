@@ -173,4 +173,3 @@ int32_t CmdGetContract::run(string server, string mynym, string contract)
     string response = MadeEasy::retrieve_contract(server, mynym, contract);
     return processResponse(response, "retrieve contract");
 }
-

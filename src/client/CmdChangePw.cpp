@@ -163,4 +163,3 @@ int32_t CmdChangePw::run()
 
     return 1;
 }
-

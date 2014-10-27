@@ -298,9 +298,11 @@ bool OTMeCpp::accept_inbox_items(const std::string& ACCOUNT_ID,
         CmdAcceptReceipts acceptReceipts;
         return 1 == acceptReceipts.run(ACCOUNT_ID, INDICES);
     }
+    default:
+        otErr << __FUNCTION__ << ": Invalid nItemType.\n";
+        break;
     }
 
-    otErr << __FUNCTION__ << ": Invalid nItemType.\n";
     return false;
 }
 
@@ -420,7 +422,7 @@ bool OTMeCpp::withdraw_and_send_cash(const std::string& ACCT_ID,
     CmdSendCash sendCash;
     return 1 ==
            sendCash.run("", "", ACCT_ID, "", RECIPIENT_NYM_ID,
-                        std::to_string(AMOUNT), "", "", MEMO);
+                        std::to_string(AMOUNT), "", "");
 }
 
 std::string OTMeCpp::get_payment_instrument(

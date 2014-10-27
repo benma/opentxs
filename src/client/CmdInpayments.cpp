@@ -236,4 +236,3 @@ int32_t CmdInpayments::run(string server, string mynym)
 
     return 1;
 }
-

@@ -171,8 +171,8 @@ private:
                           const char* defaultName = nullptr);
     OTVariable* setGlobalVar(OT_ME& madeEasy, const std::string& name,
                              const std::string& value);
-    int opentxsCommand(const std::string& command, AnyOption& opt);
-    int processCommand(OT_ME& madeEasy, AnyOption& opt);
+    int opentxsCommand(const std::string& command);
+    int processCommand(AnyOption& opt);
     int runCommand(CmdBase& cmd);
 
     std::string& ltrim(std::string& s);

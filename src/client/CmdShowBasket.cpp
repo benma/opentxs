@@ -239,4 +239,3 @@ int32_t CmdShowBasket::run(string index)
 
     return 1;
 }
-

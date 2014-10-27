@@ -177,4 +177,3 @@ int32_t CmdVerifyReceipt::run(string server, string myacct)
     }
     return 1;
 }
-

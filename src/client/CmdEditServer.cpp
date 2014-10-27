@@ -173,4 +173,3 @@ int32_t CmdEditServer::run(string server, string label)
 
     return 1;
 }
-

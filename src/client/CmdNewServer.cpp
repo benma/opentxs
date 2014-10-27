@@ -184,4 +184,3 @@ int32_t CmdNewServer::run(string mynym)
 
     return 1;
 }
-

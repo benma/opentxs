@@ -251,4 +251,3 @@ int32_t CmdImportCash::run(string mynym)
 
     return 1;
 }
-

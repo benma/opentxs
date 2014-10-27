@@ -173,4 +173,3 @@ int32_t CmdEditNym::run(string mynym, string label)
 
     return 1;
 }
-

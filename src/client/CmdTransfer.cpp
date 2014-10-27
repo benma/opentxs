@@ -213,4 +213,3 @@ int32_t CmdTransfer::run(string myacct, string hisacct, string amount,
 
     return 1;
 }
-

@@ -400,4 +400,3 @@ int32_t CmdCancel::run(string mynym, string myacct, string indices)
     }
     return retVal;
 }
-

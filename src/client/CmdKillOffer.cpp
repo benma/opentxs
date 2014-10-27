@@ -183,4 +183,3 @@ int32_t CmdKillOffer::run(string server, string mynym, string myacct, string id)
     return processTxResponse(server, mynym, myacct, response,
                              "kill market offer");
 }
-

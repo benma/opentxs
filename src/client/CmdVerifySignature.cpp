@@ -175,4 +175,3 @@ int32_t CmdVerifySignature::run(string hisnym)
 
     return 1;
 }
-

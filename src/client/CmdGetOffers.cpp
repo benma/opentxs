@@ -188,4 +188,3 @@ int32_t CmdGetOffers::run(string server, string mynym, string market,
     CmdShowOffers showOffers;
     return showOffers.run(server, market);
 }
-

@@ -166,4 +166,3 @@ int32_t CmdAcceptInvoices::run(string myacct, string indices)
 
     return acceptFromPaymentbox(myacct, indices, "INVOICE");
 }
-

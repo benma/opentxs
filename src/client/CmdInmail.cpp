@@ -233,4 +233,3 @@ bool CmdInmail::showMail(const string& mynym, int32_t index,
 
     return true;
 }
-

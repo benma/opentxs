@@ -621,9 +621,10 @@ bool CmdBase::run(const map<string, string>& _options)
         return true;
     case -1: // failed
         return false;
+    default:
+        otOut << "Error: undefined error code: " << returnValue << ".\n";
     }
 
-    otOut << "Error: undefined error code: " << returnValue << ".\n";
     return false;
 }
 
@@ -650,4 +651,3 @@ vector<string> CmdBase::tokenize(const string& str, char delim,
 
     return tokens;
 }
-

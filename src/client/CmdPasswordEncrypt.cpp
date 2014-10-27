@@ -176,4 +176,3 @@ int32_t CmdPasswordEncrypt::run()
 
     return 1;
 }
-

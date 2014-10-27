@@ -217,4 +217,3 @@ int32_t CmdShowActive::run(string server, string mynym, string id)
 
     return 1;
 }
-

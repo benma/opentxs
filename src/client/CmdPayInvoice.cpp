@@ -414,4 +414,3 @@ int32_t CmdPayInvoice::processPayment(const string& myacct,
 
     return -1;
 }
-

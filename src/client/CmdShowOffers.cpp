@@ -246,4 +246,3 @@ OTDB::OfferListMarket* CmdShowOffers::loadMarketOffers(const string& server,
 
     return offerList;
 }
-

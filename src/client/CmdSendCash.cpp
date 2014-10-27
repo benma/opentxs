@@ -168,12 +168,12 @@ int32_t CmdSendCash::runWithOptions()
 {
     return run(getOption("server"), getOption("mynym"), getOption("myacct"),
                getOption("mypurse"), getOption("hisnym"), getOption("amount"),
-               getOption("indices"), getOption("password"), getOption("memo"));
+               getOption("indices"), getOption("password"));
 }
 
 int32_t CmdSendCash::run(string server, string mynym, string myacct,
                          string mypurse, string hisnym, string amount,
-                         string indices, string password, string memo)
+                         string indices, string password)
 {
     if ("" != myacct) {
         if (!checkAccount("myacct", myacct)) {
@@ -246,8 +246,8 @@ int32_t CmdSendCash::run(string server, string mynym, string myacct,
     }
 
     string response = "";
-    if (1 != sendCash(response, server, mynym, mypurse, myacct, hisnym, memo,
-                      amount, indices, password == "true")) {
+    if (1 != sendCash(response, server, mynym, mypurse, myacct, hisnym, amount,
+                      indices, password == "true")) {
         return -1;
     }
 
@@ -259,8 +259,8 @@ int32_t CmdSendCash::run(string server, string mynym, string myacct,
 int32_t CmdSendCash::sendCash(string& response, const string& server,
                               const string& mynym, const string& assetType,
                               const string& myacct, string& hisnym,
-                              const string& memo, const string& amount,
-                              string& indices, bool hasPassword) const
+                              const string& amount, string& indices,
+                              bool hasPassword) const
 {
     int64_t startAmount = "" == amount ? 0 : stoll(amount);
 
@@ -425,4 +425,3 @@ bool CmdSendCash::getPurseIndicesOrAmount(const string& server,
 
     return findAmountFromIndices ? true : false;
 }
-

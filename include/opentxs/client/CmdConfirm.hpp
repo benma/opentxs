@@ -154,13 +154,11 @@ protected:
 private:
     int32_t activateContract(const std::string& server,
                              const std::string& mynym,
-                             const std::string& myacct,
                              const std::string& contract,
                              const std::string& name, int32_t accounts);
     int32_t confirmAccounts(std::string server, std::string mynym,
                             std::string myacct, std::string contract,
-                            const std::string& name, int32_t accounts,
-                            int32_t nIndex);
+                            const std::string& name, int32_t accounts);
     int32_t confirmInstrument(const std::string& server,
                               const std::string& mynym,
                               const std::string& myacct,

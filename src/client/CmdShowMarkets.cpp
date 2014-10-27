@@ -226,4 +226,3 @@ OTDB::MarketList* CmdShowMarkets::loadMarketList(const string& server)
     // This WAS a "load or create" sort of function, but I commented out the
     // "create" part because you will literally NEVER need to create this list.
 }
-

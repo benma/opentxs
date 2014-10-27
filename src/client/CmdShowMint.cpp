@@ -182,4 +182,3 @@ int32_t CmdShowMint::run(string server, string mynym, string mypurse)
 
     return 1;
 }
-

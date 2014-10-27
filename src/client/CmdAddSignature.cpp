@@ -179,4 +179,3 @@ int32_t CmdAddSignature::run(string mynym)
 
     return 1;
 }
-

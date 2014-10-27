@@ -171,4 +171,3 @@ int32_t CmdImportNym::run()
 
     return 1;
 }
-

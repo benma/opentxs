@@ -166,4 +166,3 @@ int32_t CmdAcceptReceipts::run(string myacct, string indices)
 
     return acceptFromInbox(myacct, indices, typeReceipts);
 }
-

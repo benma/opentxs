@@ -291,4 +291,3 @@ string CmdBaseInstrument::writeCheque(string myacct, string hisnym,
 
     return cheque;
 }
-

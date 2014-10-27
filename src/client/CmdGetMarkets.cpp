@@ -177,4 +177,3 @@ int32_t CmdGetMarkets::run(string server, string mynym)
     CmdShowMarkets showMarkets;
     return showMarkets.run(server);
 }
-

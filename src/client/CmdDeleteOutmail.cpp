@@ -203,4 +203,3 @@ int32_t CmdDeleteOutmail::run(string mynym, string indices)
 
     return retVal;
 }
-

@@ -193,4 +193,3 @@ int32_t CmdSendMessage::run(string server, string mynym, string hisnym)
     string response = MadeEasy::send_user_msg(server, mynym, hisnym, input);
     return processResponse(response, "send message");
 }
-

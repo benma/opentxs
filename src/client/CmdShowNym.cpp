@@ -170,4 +170,3 @@ int32_t CmdShowNym::run(string mynym)
     cout << nymStats << "\n";
     return 1;
 }
-

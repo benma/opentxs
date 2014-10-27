@@ -225,4 +225,3 @@ int32_t CmdWithdrawCash::withdrawCash(const string& myacct,
 
     return 1;
 }
-

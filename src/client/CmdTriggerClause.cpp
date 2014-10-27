@@ -197,4 +197,3 @@ int32_t CmdTriggerClause::run(string server, string mynym, string id,
         MadeEasy::trigger_clause(server, mynym, id, clause, param);
     return processResponse(response, "trigger clause");
 }
-

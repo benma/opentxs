@@ -185,4 +185,3 @@ int32_t CmdRefresh::run(string myacct)
 
     return 1;
 }
-

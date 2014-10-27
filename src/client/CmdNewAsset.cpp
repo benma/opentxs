@@ -184,4 +184,3 @@ int32_t CmdNewAsset::run(string mynym)
 
     return 1;
 }
-

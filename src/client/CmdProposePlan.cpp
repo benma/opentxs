@@ -253,4 +253,3 @@ int32_t CmdProposePlan::run(string server, string mynym, string hisnym,
 
     return 1;
 }
-

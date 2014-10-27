@@ -173,4 +173,3 @@ int32_t CmdEncode::run()
 
     return 1;
 }
-
