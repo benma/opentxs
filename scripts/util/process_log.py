@@ -4,7 +4,7 @@ import cgi
 import sys
 
 def html_escape(input):
-    s = cgi.escape(input) 
+    s = cgi.escape(input)
     return s.replace('\n', '<br>\n')
 
 class Line:
@@ -21,10 +21,13 @@ class Line:
         for l in lines:
             if l == self:
                 continue
-            start = self.input.find(l.output)
-            if start == -1:
-                continue
-            found[(start, -len(l.output))] = l
+            begin = 0
+            while(True):
+                start = self.input.find(l.output, begin)
+                if start == -1:
+                    break
+                found[(start, -len(l.output))] = l
+                begin = start + len(l.output)
 
         maximum_reached = -1
         result = {}
@@ -33,7 +36,7 @@ class Line:
                 continue
             # key[1] is negative
             maximum_reached = key[0] - key[1]
-            result[(key[0], maximum_reached)] = found[key]
+            result[(key[0], maximum_reached - 1)] = found[key]
             # and process also result
             found[key].generate(lines)
 
@@ -42,7 +45,7 @@ class Line:
             if key[0] > maximum_reached + 1:
                 result[(maximum_reached + 1, key[0] - 1)] = None
             maximum_reached = key[1]
-        
+
         if maximum_reached < len(self.output):
             result[(maximum_reached + 1, len(self.input))] = None
 
@@ -50,7 +53,7 @@ class Line:
 #        print(found)
 #        print(result)
         self.tree = result
-        
+
     def generateHtml(self):
         html = '<table border="1" >'
         for key in sorted(self.tree.keys()):
@@ -81,8 +84,8 @@ class Message:
     def generateHtml(self):
         self.line.generate(self.lines)
         return self.line.generateHtml()
-        
-        
+
+
 def parse_file(filename):
     messages = []
     lines = []
@@ -101,7 +104,7 @@ def parse_file(filename):
                 l = Line(base64.decodestring(s[0]), base64.decodestring(s[1]), s[2])
                 lines.append(l)
     return messages
-                        
+
 messages = parse_file(sys.argv[1])
 
 print "<html>\n"
