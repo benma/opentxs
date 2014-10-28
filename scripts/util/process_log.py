@@ -46,8 +46,8 @@ class Line:
                 result[(maximum_reached + 1, key[0] - 1)] = None
             maximum_reached = key[1]
 
-        if maximum_reached < len(self.output):
-            result[(maximum_reached + 1, len(self.input))] = None
+        if maximum_reached + 1 <= len(self.input) - 1:
+            result[(maximum_reached + 1, len(self.input) - 1)] = None
 
 #        print(self.input)
 #        print(found)
