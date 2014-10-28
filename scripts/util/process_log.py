@@ -54,11 +54,13 @@ class Line:
 #        print(result)
         self.tree = result
 
-    def generateHtml(self):
-        html = '<table border="1" >'
+    def generateHtml(self, bgcolor=None):
+        html = '<table border="1" '
+        if bgcolor:
+            html += 'bgcolor="%s" ' % bgcolor
+        html += '>'
         for key in sorted(self.tree.keys()):
             html += "<tr>"
-            # TODO: escape chars
             html += "<td>" + html_escape(self.input[key[0]:key[1]+1]) + "</td>"
             html += "<td>"
             l = self.tree[key]
@@ -77,18 +79,26 @@ class Message:
     def __init__(self, line):
         self.line = line
         self.lines = []
+        self.time = line.output.split("_")[2]
+        self.device = line.output.split("_")[1]
 
     def addLine(self, line):
         self.lines.append(line)
 
     def generateHtml(self):
         self.line.generate(self.lines)
-        return self.line.generateHtml()
+        bgcolor = None
+        if self.device == "server":
+            bgcolor = "#F5F5DC"
+        if self.device == "client":
+            bgcolor = "#F0F8FF"
+        
+        return self.line.generateHtml(bgcolor=bgcolor)
 
 
+lines = []
 def parse_file(filename):
     messages = []
-    lines = []
     with open(filename, "r") as f:
         for line in f:
             if not line.startswith("TraceLine:"):
@@ -99,13 +109,16 @@ def parse_file(filename):
                 l = Line(base64.decodestring(s[0]), s[1], s[2])
                 messages.append(Message(l))
                 messages[-1].lines = lines
-                lines = []
             else:
                 l = Line(base64.decodestring(s[0]), base64.decodestring(s[1]), s[2])
-                lines.append(l)
+            lines.append(l)
     return messages
 
 messages = parse_file(sys.argv[1])
+if len(sys.argv) > 2:
+    messages_client = parse_file(sys.argv[2])
+    messages.extend(messages_client)
+    messages.sort(key=lambda x: x.time)
 
 print "<html>\n"
 for m in messages:
