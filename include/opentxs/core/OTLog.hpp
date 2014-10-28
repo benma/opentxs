@@ -151,9 +151,10 @@
 #define PREDEF_MODE_DEBUG 1
 #endif
 
-#define TRACE(input, output) trace(input, output, __FILE__, __LINE__)
+#define TRACE(input, output)                                                   \
+    trace(input, output, __FILE__, __FUNCTION__, __LINE__)
 #define TRACE_MESSAGE(input, spec, id)                                         \
-    trace_message(input, spec, id, __FILE__, __LINE__)
+    trace_message(input, spec, id, __FILE__, __FUNCTION__, __LINE__)
 
 namespace opentxs
 {
@@ -337,17 +338,18 @@ std::string trace_to_string(const OTString& input);
 std::string trace_to_string(const OTData& input);
 
 template <class I, class O>
-void trace(const I& input, const O& output, const char* filename, int line)
+void trace(const I& input, const O& output, const char* filename,
+           const char* function, int line)
 {
     std::string input_str = trace_to_string(input);
     std::string output_str = trace_to_string(output);
     otErr << "TraceLine: " << input_str << ";" << output_str << ";" << filename
-          << ":" << line << "\n";
+          << ":" << function << ":" << line << "\n";
 }
 
 template <class I>
 void trace_message(const I& input, const std::string spec, int id,
-                   const char* filename, int line)
+                   const char* filename, const char* function, int line)
 {
     std::string input_str = trace_to_string(input);
     std::chrono::milliseconds milisec =
@@ -356,7 +358,7 @@ void trace_message(const I& input, const std::string spec, int id,
     std::string output("message_" + spec + "_" + std::to_string(id) + "_" +
                        std::to_string(milisec.count()));
     otErr << "TraceLine: " << input_str << ";" << output << ";" << filename
-          << ":" << line << "\n";
+          << ":" << function << ":" << line << "\n";
 }
 
 } // namespace opentxs
