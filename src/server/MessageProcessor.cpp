@@ -270,8 +270,8 @@ void MessageProcessor::run()
                 else {
                     std::string reply;
                     bool shouldDisconnect = processMessage(messageString, reply);
-                    static int msg_id=1;
-                    TRACE_MESSAGE(reply, std::string("message_") + std::to_string (msg_id++));
+                    static int msg_id = 1;
+                    TRACE_MESSAGE(reply, "server", msg_id++);
                     if (reply.length() <= 0 || shouldDisconnect) {
                         OTLog::vOutput(
                             0, "server main: ERROR: Unfortunately, not every "

@@ -1187,6 +1187,9 @@ bool OT_API::TransportFunction(const OTServerContract& theServerContract,
                 return false; // unable to make context. btw. should have been
                               // already made.
 
+        static int msg_id = 0;
+        TRACE_MESSAGE(ascEnvelope, "client", msg_id++);
+
         bool bSuccessSending =
             m_pSocket->Send(ascEnvelope, strConnectPath.Get()); // <========
 

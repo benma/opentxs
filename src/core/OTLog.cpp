@@ -227,7 +227,6 @@ struct sigcontext
 namespace opentxs
 {
 
-
 OTLog* OTLog::pLogger = nullptr;
 
 const String OTLog::m_strVersion = OPENTXS_VERSION_STRING;
@@ -1332,47 +1331,27 @@ void OTLog::SetupSignalHandler()
 
 #endif // #if windows, #else (unix) #endif. (SIGNAL handling.)
 
-std::string trace_to_string(const std::string &input) {
-    return OTCrypto::It()->Base64Encode(reinterpret_cast<const uint8_t*>(input.c_str()), input.size(), false);
+std::string trace_to_string(const std::string& input)
+{
+    return OTCrypto::It()->Base64Encode(
+        reinterpret_cast<const uint8_t*>(input.c_str()), input.size(), false);
 }
 
-std::string trace_to_string(const OTString &input) {
+std::string trace_to_string(const OTString& input)
+{
     return trace_to_string(std::string(input.Get()));
 }
 
-std::string trace_to_string(const char *input) {
+std::string trace_to_string(const char* input)
+{
     return trace_to_string(std::string(input));
 }
 
-std::string trace_to_string(const OTData &input) {
-    return OTCrypto::It()->Base64Encode(reinterpret_cast<const uint8_t*>(input.GetPointer()), input.GetSize(), false);
-}
-/*
-void trace(const OTString &input, const OTString &output, const char* filename, int line) {
-    trace(std::string(input.Get()), std::string(output.Get()), filename, line);
-}
-
-void trace(const std::string &input, const std::string &output, const char* filename, int line) {
-    std::string input_based(OTCrypto::It()->Base64Encode(reinterpret_cast<const uint8_t*>(input.c_str()), input.size(), false));
-    std::string output_based(OTCrypto::It()->Base64Encode(reinterpret_cast<const uint8_t*>(output.c_str()), output.size(), false));
-    otErr << "TraceLine: " << input_based << ";" << output_based << ";" << filename << ":" << line << "\n";
-}
-
-void trace(const std::string &input, const OTData &output, const char* filename, int line) {
-    std::string input_based(OTCrypto::It()->Base64Encode(reinterpret_cast<const uint8_t*>(input.c_str()), input.size(), false));
-    std::string output_based(OTCrypto::It()->Base64Encode(reinterpret_cast<const uint8_t*>(output.GetPointer()), output.GetSize(), false));
-    otErr << "TraceLine: " << input_based << ";" << output_based << ";" << filename << ":" << line << "\n";
-}
-
-void trace(const OTData &input, const std::string &output, const char* filename, int line) {
-    std::string input_based(OTCrypto::It()->Base64Encode(reinterpret_cast<const uint8_t*>(input.GetPointer()), input.GetSize(), false));
-    std::string output_based(OTCrypto::It()->Base64Encode(reinterpret_cast<const uint8_t*>(output.c_str()), output.size(), false));
-    otErr << "TraceLine: " << input_based << ";" << output_based << ";" << filename << ":" << line << "\n";
-}
-*/
-void trace_message(const std::string &input, const std::string &output, const char* filename, int line) {
-    std::string input_based(OTCrypto::It()->Base64Encode(reinterpret_cast<const uint8_t*>(input.c_str()), input.size(), false));
-    otErr << "TraceLine: " << input_based << ";" << output << ";" << filename << ":" << line << "\n";
+std::string trace_to_string(const OTData& input)
+{
+    return OTCrypto::It()->Base64Encode(
+        reinterpret_cast<const uint8_t*>(input.GetPointer()), input.GetSize(),
+        false);
 }
 
 } // namespace opentxs
