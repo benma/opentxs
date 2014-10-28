@@ -5,7 +5,7 @@ import sys
 
 def html_escape(input):
     s = cgi.escape(input) 
-    return s.replace('\n', '<br>')
+    return s.replace('\n', '<br>\n')
 
 class Line:
     def __init__(self, input, output, link):
@@ -92,13 +92,12 @@ def parse_file(filename):
                 continue
             ss = line.split(" ", 1)[1]
             s = ss.split(";")
-            #print(s)
             if s[1].startswith("message_"):
                 l = Line(base64.decodestring(s[0]), s[1], s[2])
                 messages.append(Message(l))
                 messages[-1].lines = lines
                 lines = []
-            elif messages:
+            else:
                 l = Line(base64.decodestring(s[0]), base64.decodestring(s[1]), s[2])
                 lines.append(l)
     return messages
