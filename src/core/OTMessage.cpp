@@ -134,12 +134,14 @@
 
 #include <opentxs/core/OTMessage.hpp>
 
+#include <opentxs/core/StringWriter.hpp>
 #include <opentxs/core/OTLedger.hpp>
 #include <opentxs/core/OTLog.hpp>
 #include <opentxs/core/OTPseudonym.hpp>
 #include <opentxs/core/OTStorage.hpp>
 
 #include <fstream>
+#include <sstream> // std::istringstream
 
 #include <irrxml/irrXML.hpp>
 
@@ -298,28 +300,28 @@ void OTMessage::SetAcknowledgments(OTPseudonym& theNym)
 void OTMessage::UpdateContents()
 {
     // I release this because I'm about to repopulate it.
-    m_xmlUnsigned.Release();
+    StringWriter sw;
 
     m_lTime = OTTimeGetSecondsFromTime(OTTimeGetCurrentTime());
 
-    m_xmlUnsigned.Concatenate("<?xml version=\"%s\"?>\n\n", "1.0");
-    m_xmlUnsigned.Concatenate(
-        "<OTmessage\n version=\"%s\"\n dateSigned=\"%" PRId64 "\">\n\n",
-        m_strVersion.Get(), m_lTime);
+    sw.Concatenate("<?xml version=\"%s\"?>\n\n", "1.0");
+    sw.Concatenate("<OTmessage\n version=\"%s\"\n dateSigned=\"%" PRId64
+                   "\">\n\n",
+                   m_strVersion.Get(), m_lTime);
 
-    if (!updateContentsByType()) {
-        m_xmlUnsigned.Concatenate("<%s\n" // Command
-                                  " requestNum=\"%s\"\n"
-                                  " success=\"false\"\n"
-                                  " acctID=\"%s\"\n"
-                                  " nymID=\"%s\"\n"
-                                  " serverID=\"%s\""
-                                  " ><!-- THIS IS AN INVALID MESSAGE -->\n\n",
-                                  m_strCommand.Get(), m_strRequestNum.Get(),
-                                  m_strAcctID.Get(), m_strNymID.Get(),
-                                  m_strServerID.Get());
+    if (!updateContentsByType(sw)) {
+        sw.Concatenate("<%s\n" // Command
+                       " requestNum=\"%s\"\n"
+                       " success=\"false\"\n"
+                       " acctID=\"%s\"\n"
+                       " nymID=\"%s\"\n"
+                       " serverID=\"%s\""
+                       " ><!-- THIS IS AN INVALID MESSAGE -->\n\n",
+                       m_strCommand.Get(), m_strRequestNum.Get(),
+                       m_strAcctID.Get(), m_strNymID.Get(),
+                       m_strServerID.Get());
 
-        m_xmlUnsigned.Concatenate("</%s>\n\n", m_strCommand.Get());
+        sw.Concatenate("</%s>\n\n", m_strCommand.Get());
     }
 
     // ACKNOWLEDGED REQUEST NUMBERS
@@ -343,20 +345,22 @@ void OTMessage::UpdateContents()
             const OTASCIIArmor ascTemp(strAck);
 
             if (ascTemp.Exists())
-                m_xmlUnsigned.Concatenate("<ackReplies>\n%s</ackReplies>\n\n",
-                                          ascTemp.Get());
+                sw.Concatenate("<ackReplies>\n%s</ackReplies>\n\n",
+                               ascTemp.Get());
         }
     }
 
-    m_xmlUnsigned.Concatenate("</OTmessage>\n");
+    sw.Concatenate("</OTmessage>\n");
+
+    m_xmlUnsigned.Set(sw.Get());
 }
 
-bool OTMessage::updateContentsByType()
+bool OTMessage::updateContentsByType(StringWriter& sw)
 {
     OTMessageStrategy* strategy =
         messageStrategyManager.findStrategy(m_strCommand.Get());
     if (!strategy) return false;
-    m_xmlUnsigned.Concatenate(strategy->writeXml(*this));
+    strategy->writeXml(sw, *this);
     return true;
 }
 
@@ -569,9 +573,9 @@ OTMessageStrategy::~OTMessageStrategy()
 class StrategyGetMarketOffers : public OTMessageStrategy
 {
 public:
-    virtual OTString writeXml(OTMessage& m)
+    virtual OTString writeXml(StringWriter& sw, OTMessage& m)
     {
-        OTString result;
+        StringWriter& result = sw;
         result.Concatenate("<%s\n"
                            " requestNum=\"%s\"\n"
                            " nymID=\"%s\"\n"
@@ -585,7 +589,7 @@ public:
                            m.m_lDepth);
 
         result.Concatenate("</%s>\n\n", m.m_strCommand.Get());
-        return result;
+        return result.GetOTString();
     }
 
     virtual int32_t processXml(OTMessage& m, irr::io::IrrXMLReader*& xml)
@@ -616,9 +620,9 @@ RegisterStrategy StrategyGetMarketOffers::reg("getMarketOffers",
 class StrategyAtGetMarketOffers : public OTMessageStrategy
 {
 public:
-    virtual OTString writeXml(OTMessage& m)
+    virtual OTString writeXml(StringWriter& sw, OTMessage& m)
     {
-        OTString result;
+        StringWriter& result = sw;
         result.Concatenate("<%s\n"
                            " requestNum=\"%s\"\n"
                            " success=\"%s\"\n"
@@ -642,7 +646,7 @@ public:
                                m.m_ascInReferenceTo.Get());
 
         result.Concatenate("</%s>\n\n", m.m_strCommand.Get());
-        return result;
+        return result.GetOTString();
     }
 
     virtual int32_t processXml(OTMessage& m, irr::io::IrrXMLReader*& xml)
@@ -708,9 +712,9 @@ RegisterStrategy StrategyAtGetMarketOffers::reg(
 class StrategyGetMarketRecentTrades : public OTMessageStrategy
 {
 public:
-    virtual OTString writeXml(OTMessage& m)
+    virtual OTString writeXml(StringWriter& sw, OTMessage& m)
     {
-        OTString result;
+        StringWriter& result = sw;
         result.Concatenate("<%s\n"
                            " requestNum=\"%s\"\n"
                            " nymID=\"%s\"\n"
@@ -723,7 +727,7 @@ public:
                            );
 
         result.Concatenate("</%s>\n\n", m.m_strCommand.Get());
-        return result;
+        return result.GetOTString();
     }
 
     int32_t processXml(OTMessage& m, irr::io::IrrXMLReader*& xml)
@@ -750,9 +754,9 @@ RegisterStrategy StrategyGetMarketRecentTrades::reg(
 class StrategyAtGetMarketRecentTrades : public OTMessageStrategy
 {
 public:
-    virtual OTString writeXml(OTMessage& m)
+    virtual OTString writeXml(StringWriter& sw, OTMessage& m)
     {
-        OTString result;
+        StringWriter& result = sw;
         result.Concatenate("<%s\n"
                            " requestNum=\"%s\"\n"
                            " success=\"%s\"\n"
@@ -776,7 +780,7 @@ public:
                                m.m_ascInReferenceTo.Get());
 
         result.Concatenate("</%s>\n\n", m.m_strCommand.Get());
-        return result;
+        return result.GetOTString();
     }
 
     virtual int32_t processXml(OTMessage& m, irr::io::IrrXMLReader*& xml)
@@ -842,9 +846,9 @@ RegisterStrategy StrategyAtGetMarketRecentTrades::reg(
 class StrategyGetNymMarketOffers : public OTMessageStrategy
 {
 public:
-    virtual OTString writeXml(OTMessage& m)
+    virtual OTString writeXml(StringWriter& sw, OTMessage& m)
     {
-        OTString result;
+        StringWriter& result = sw;
         result.Concatenate("<%s\n"
                            " requestNum=\"%s\"\n"
                            " nymID=\"%s\"\n"
@@ -854,7 +858,7 @@ public:
                            m.m_strNymID.Get(), m.m_strServerID.Get());
 
         result.Concatenate("</%s>\n\n", m.m_strCommand.Get());
-        return result;
+        return result.GetOTString();
     }
 
     virtual int32_t processXml(OTMessage& m, irr::io::IrrXMLReader*& xml)
@@ -879,9 +883,9 @@ RegisterStrategy StrategyGetNymMarketOffers::reg(
 class StrategyAtGetNymMarketOffers : public OTMessageStrategy
 {
 public:
-    virtual OTString writeXml(OTMessage& m)
+    virtual OTString writeXml(StringWriter& sw, OTMessage& m)
     {
-        OTString result;
+        StringWriter& result = sw;
         result.Concatenate("<%s\n"
                            " requestNum=\"%s\"\n"
                            " success=\"%s\"\n"
@@ -903,7 +907,7 @@ public:
                                m.m_ascInReferenceTo.Get());
 
         result.Concatenate("</%s>\n\n", m.m_strCommand.Get());
-        return result;
+        return result.GetOTString();
     }
 
     virtual int32_t processXml(OTMessage& m, irr::io::IrrXMLReader*& xml)
@@ -966,9 +970,9 @@ RegisterStrategy StrategyAtGetNymMarketOffers::reg(
 class StrategyCheckServerID : public OTMessageStrategy
 {
 public:
-    virtual OTString writeXml(OTMessage& m)
+    virtual OTString writeXml(StringWriter& sw, OTMessage& m)
     {
-        OTString result;
+        StringWriter& result = sw;
         result.Concatenate("<%s\n"
                            " requestNum=\"%s\"\n"
                            " nymID=\"%s\"\n"
@@ -984,7 +988,7 @@ public:
             m.m_strNymID2.Get());
 
         result.Concatenate("</%s>\n\n", m.m_strCommand.Get());
-        return result;
+        return result.GetOTString();
     }
 
     int32_t processXml(OTMessage& m, irr::io::IrrXMLReader*& xml)
@@ -1038,9 +1042,9 @@ RegisterStrategy StrategyCheckServerID::reg("checkServerID",
 class StrategyAtCheckServerID : public OTMessageStrategy
 {
 public:
-    virtual OTString writeXml(OTMessage& m)
+    virtual OTString writeXml(StringWriter& sw, OTMessage& m)
     {
-        OTString result;
+        StringWriter& result = sw;
         result.Concatenate("<%s\n"
                            " requestNum=\"%s\"\n"
                            " success=\"%s\"\n"
@@ -1052,7 +1056,7 @@ public:
                            m.m_strNymID.Get(), m.m_strServerID.Get());
 
         result.Concatenate("</%s>\n\n", m.m_strCommand.Get());
-        return result;
+        return result.GetOTString();
     }
 
     int32_t processXml(OTMessage& m, irr::io::IrrXMLReader*& xml)
@@ -1080,9 +1084,9 @@ RegisterStrategy StrategyAtCheckServerID::reg("@checkServerID",
 class StrategyCreateUserAccount : public OTMessageStrategy
 {
 public:
-    virtual OTString writeXml(OTMessage& m)
+    virtual OTString writeXml(StringWriter& sw, OTMessage& m)
     {
-        OTString result;
+        StringWriter& result = sw;
         result.Concatenate("<%s\n"
                            " requestNum=\"%s\"\n"
                            " nymID=\"%s\"\n"
@@ -1098,7 +1102,7 @@ public:
                                m.m_ascPayload2.Get());
 
         result.Concatenate("</%s>\n\n", m.m_strCommand.Get());
-        return result;
+        return result.GetOTString();
     }
 
     int32_t processXml(OTMessage& m, irr::io::IrrXMLReader*& xml)
@@ -1144,9 +1148,9 @@ RegisterStrategy StrategyCreateUserAccount::reg(
 class StrategyAtCreateUserAccount : public OTMessageStrategy
 {
 public:
-    virtual OTString writeXml(OTMessage& m)
+    virtual OTString writeXml(StringWriter& sw, OTMessage& m)
     {
-        OTString result;
+        StringWriter& result = sw;
         result.Concatenate("<%s\n"
                            " requestNum=\"%s\"\n"
                            " success=\"%s\"\n"
@@ -1166,7 +1170,7 @@ public:
                                m.m_ascInReferenceTo.Get());
 
         result.Concatenate("</%s>\n\n", m.m_strCommand.Get());
-        return result;
+        return result.GetOTString();
     }
 
     int32_t processXml(OTMessage& m, irr::io::IrrXMLReader*& xml)
@@ -1219,9 +1223,9 @@ RegisterStrategy StrategyAtCreateUserAccount::reg(
 class StrategyDeleteUserAccount : public OTMessageStrategy
 {
 public:
-    virtual OTString writeXml(OTMessage& m)
+    virtual OTString writeXml(StringWriter& sw, OTMessage& m)
     {
-        OTString result;
+        StringWriter& result = sw;
         result.Concatenate("<%s\n"
                            " requestNum=\"%s\"\n"
                            " nymID=\"%s\"\n"
@@ -1231,7 +1235,7 @@ public:
                            m.m_strNymID.Get(), m.m_strServerID.Get());
 
         result.Concatenate("</%s>\n\n", m.m_strCommand.Get());
-        return result;
+        return result.GetOTString();
     }
 
     int32_t processXml(OTMessage& m, irr::io::IrrXMLReader*& xml)
@@ -1255,9 +1259,9 @@ RegisterStrategy StrategyDeleteUserAccount::reg(
 class StrategyAtDeleteUserAccount : public OTMessageStrategy
 {
 public:
-    virtual OTString writeXml(OTMessage& m)
+    virtual OTString writeXml(StringWriter& sw, OTMessage& m)
     {
-        OTString result;
+        StringWriter& result = sw;
         result.Concatenate("<%s\n"
                            " requestNum=\"%s\"\n"
                            " success=\"%s\"\n"
@@ -1273,7 +1277,7 @@ public:
                                m.m_ascInReferenceTo.Get());
 
         result.Concatenate("</%s>\n\n", m.m_strCommand.Get());
-        return result;
+        return result.GetOTString();
     }
 
     int32_t processXml(OTMessage& m, irr::io::IrrXMLReader*& xml)
@@ -1312,9 +1316,9 @@ RegisterStrategy StrategyAtDeleteUserAccount::reg(
 class StrategyCheckUser : public OTMessageStrategy
 {
 public:
-    virtual OTString writeXml(OTMessage& m)
+    virtual OTString writeXml(StringWriter& sw, OTMessage& m)
     {
-        OTString result;
+        StringWriter& result = sw;
         result.Concatenate("<%s\n"
                            " nymID=\"%s\"\n"
                            " nymID2=\"%s\"\n"
@@ -1326,7 +1330,7 @@ public:
                            m.m_strServerID.Get());
 
         result.Concatenate("</%s>\n\n", m.m_strCommand.Get());
-        return result;
+        return result.GetOTString();
     }
 
     int32_t processXml(OTMessage& m, irr::io::IrrXMLReader*& xml)
@@ -1352,9 +1356,9 @@ RegisterStrategy StrategyCheckUser::reg("checkUser", new StrategyCheckUser());
 class StrategyAtCheckUser : public OTMessageStrategy
 {
 public:
-    virtual OTString writeXml(OTMessage& m)
+    virtual OTString writeXml(StringWriter& sw, OTMessage& m)
     {
-        OTString result;
+        StringWriter& result = sw;
         // This means new-style credentials are being sent, not just the public
         // key as before.
         const bool bCredentials =
@@ -1394,7 +1398,7 @@ public:
 
         result.Concatenate("</%s>\n\n", m.m_strCommand.Get());
 
-        return result;
+        return result.GetOTString();
     }
 
     int32_t processXml(OTMessage& m, irr::io::IrrXMLReader*& xml)
@@ -1486,9 +1490,9 @@ RegisterStrategy StrategyAtCheckUser::reg("@checkUser",
 class StrategyUsageCredits : public OTMessageStrategy
 {
 public:
-    virtual OTString writeXml(OTMessage& m)
+    virtual OTString writeXml(StringWriter& sw, OTMessage& m)
     {
-        OTString result;
+        StringWriter& result = sw;
         result.Concatenate("<%s\n"
                            " nymID=\"%s\"\n"
                            " nymID2=\"%s\"\n"
@@ -1501,7 +1505,7 @@ public:
                            m.m_lDepth, m.m_strServerID.Get());
 
         result.Concatenate("</%s>\n\n", m.m_strCommand.Get());
-        return result;
+        return result.GetOTString();
     }
 
     int32_t processXml(OTMessage& m, irr::io::IrrXMLReader*& xml)
@@ -1533,9 +1537,9 @@ RegisterStrategy StrategyUsageCredits::reg("usageCredits",
 class StrategyAtUsageCredits : public OTMessageStrategy
 {
 public:
-    virtual OTString writeXml(OTMessage& m)
+    virtual OTString writeXml(StringWriter& sw, OTMessage& m)
     {
-        OTString result;
+        StringWriter& result = sw;
         result.Concatenate("<%s\n"
                            " requestNum=\"%s\"\n"
                            " success=\"%s\"\n"
@@ -1550,7 +1554,7 @@ public:
                            m.m_strServerID.Get());
 
         result.Concatenate("</%s>\n\n", m.m_strCommand.Get());
-        return result;
+        return result.GetOTString();
     }
 
     int32_t processXml(OTMessage& m, irr::io::IrrXMLReader*& xml)
@@ -1585,9 +1589,9 @@ RegisterStrategy StrategyAtUsageCredits::reg("@usageCredits",
 class StrategyOutpaymentsMessageOrOutmailMessage : public OTMessageStrategy
 {
 public:
-    virtual OTString writeXml(OTMessage& m)
+    virtual OTString writeXml(StringWriter& sw, OTMessage& m)
     {
-        OTString result;
+        StringWriter& result = sw;
         // This one isn't part of the message protocol, but is used for outmail
         // storage.
         // (Because outmail isn't encrypted like the inmail is, since the
@@ -1612,7 +1616,7 @@ public:
                                m.m_ascPayload.Get());
 
         result.Concatenate("</%s>\n\n", m.m_strCommand.Get());
-        return result;
+        return result.GetOTString();
     }
 
     int32_t processXml(OTMessage& m, irr::io::IrrXMLReader*& xml)
@@ -1654,9 +1658,9 @@ RegisterStrategy StrategyOutpaymentsMessageOrOutmailMessage::reg2(
 class StrategySendUserMessage : public OTMessageStrategy
 {
 public:
-    virtual OTString writeXml(OTMessage& m)
+    virtual OTString writeXml(StringWriter& sw, OTMessage& m)
     {
-        OTString result;
+        StringWriter& result = sw;
         result.Concatenate("<%s\n"
                            " nymID=\"%s\"\n"
                            " nymID2=\"%s\"\n"
@@ -1672,7 +1676,7 @@ public:
                                m.m_ascPayload.Get());
 
         result.Concatenate("</%s>\n\n", m.m_strCommand.Get());
-        return result;
+        return result.GetOTString();
     }
 
     int32_t processXml(OTMessage& m, irr::io::IrrXMLReader*& xml)
@@ -1711,9 +1715,9 @@ RegisterStrategy StrategySendUserMessage::reg("sendUserMessage",
 class StrategyAtSendUserMessage : public OTMessageStrategy
 {
 public:
-    virtual OTString writeXml(OTMessage& m)
+    virtual OTString writeXml(StringWriter& sw, OTMessage& m)
     {
-        OTString result;
+        StringWriter& result = sw;
         result.Concatenate("<%s\n"
                            " requestNum=\"%s\"\n"
                            " success=\"%s\"\n"
@@ -1727,7 +1731,7 @@ public:
                            m.m_strServerID.Get());
 
         result.Concatenate("</%s>\n\n", m.m_strCommand.Get());
-        return result;
+        return result.GetOTString();
     }
 
     int32_t processXml(OTMessage& m, irr::io::IrrXMLReader*& xml)
@@ -1757,9 +1761,9 @@ RegisterStrategy StrategyAtSendUserMessage::reg(
 class StrategySendUserInstrumentOrPayDividend : public OTMessageStrategy
 {
 public:
-    virtual OTString writeXml(OTMessage& m)
+    virtual OTString writeXml(StringWriter& sw, OTMessage& m)
     {
-        OTString result;
+        StringWriter& result = sw;
         // sendUserInstrument is sent from one user
         // to the server, which then attaches that
         // message as a payment, onto a transaction
@@ -1792,7 +1796,7 @@ public:
                                m.m_ascPayload.Get());
 
         result.Concatenate("</%s>\n\n", m.m_strCommand.Get());
-        return result;
+        return result.GetOTString();
     }
 
     int32_t processXml(OTMessage& m, irr::io::IrrXMLReader*& xml)
@@ -1834,9 +1838,9 @@ RegisterStrategy StrategySendUserInstrumentOrPayDividend::reg2(
 class StrategyAtSendUserInstrument : public OTMessageStrategy
 {
 public:
-    virtual OTString writeXml(OTMessage& m)
+    virtual OTString writeXml(StringWriter& sw, OTMessage& m)
     {
-        OTString result;
+        StringWriter& result = sw;
         result.Concatenate("<%s\n"
                            " requestNum=\"%s\"\n"
                            " success=\"%s\"\n"
@@ -1850,7 +1854,7 @@ public:
                            m.m_strServerID.Get());
 
         result.Concatenate("</%s>\n\n", m.m_strCommand.Get());
-        return result;
+        return result.GetOTString();
     }
 
     int32_t processXml(OTMessage& m, irr::io::IrrXMLReader*& xml)
@@ -1880,9 +1884,9 @@ RegisterStrategy StrategyAtSendUserInstrument::reg(
 class StrategyGetRequest : public OTMessageStrategy
 {
 public:
-    virtual OTString writeXml(OTMessage& m)
+    virtual OTString writeXml(StringWriter& sw, OTMessage& m)
     {
-        OTString result;
+        StringWriter& result = sw;
         result.Concatenate("<%s\n"
                            " nymID=\"%s\"\n"
                            " serverID=\"%s\"\n"
@@ -1892,7 +1896,7 @@ public:
                            m.m_strServerID.Get(), m.m_strRequestNum.Get());
 
         result.Concatenate("</%s>\n\n", m.m_strCommand.Get());
-        return result;
+        return result.GetOTString();
     }
 
     int32_t processXml(OTMessage& m, irr::io::IrrXMLReader*& xml)
@@ -1916,9 +1920,9 @@ RegisterStrategy StrategyGetRequest::reg("getRequest",
 class StrategyAtGetRequest : public OTMessageStrategy
 {
 public:
-    virtual OTString writeXml(OTMessage& m)
+    virtual OTString writeXml(StringWriter& sw, OTMessage& m)
     {
-        OTString result;
+        StringWriter& result = sw;
         // This is the ONE command where you see a request number coming back
         // from
         // the server.
@@ -1939,7 +1943,7 @@ public:
             m.m_lNewRequestNum, m.m_strRequestNum.Get());
 
         result.Concatenate("</%s>\n\n", m.m_strCommand.Get());
-        return result;
+        return result.GetOTString();
     }
 
     int32_t processXml(OTMessage& m, irr::io::IrrXMLReader*& xml)
@@ -1975,9 +1979,9 @@ RegisterStrategy StrategyAtGetRequest::reg("@getRequest",
 class StrategyIssueAssetType : public OTMessageStrategy
 {
 public:
-    virtual OTString writeXml(OTMessage& m)
+    virtual OTString writeXml(StringWriter& sw, OTMessage& m)
     {
-        OTString result;
+        StringWriter& result = sw;
         result.Concatenate("<%s\n" // Command
                            " nymID=\"%s\"\n"
                            " serverID=\"%s\"\n"
@@ -1993,7 +1997,7 @@ public:
                                m.m_ascPayload.Get());
 
         result.Concatenate("</%s>\n\n", m.m_strCommand.Get());
-        return result;
+        return result.GetOTString();
     }
 
     int32_t processXml(OTMessage& m, irr::io::IrrXMLReader*& xml)
@@ -2033,9 +2037,9 @@ RegisterStrategy StrategyIssueAssetType::reg("issueAssetType",
 class StrategyAtIssueAssetType : public OTMessageStrategy
 {
 public:
-    virtual OTString writeXml(OTMessage& m)
+    virtual OTString writeXml(StringWriter& sw, OTMessage& m)
     {
-        OTString result;
+        StringWriter& result = sw;
         result.Concatenate("<%s\n" // Command
                            " requestNum=\"%s\"\n"
                            " success=\"%s\"\n"
@@ -2058,7 +2062,7 @@ public:
                                m.m_ascPayload.Get());
 
         result.Concatenate("</%s>\n\n", m.m_strCommand.Get());
-        return result;
+        return result.GetOTString();
     }
 
     int32_t processXml(OTMessage& m, irr::io::IrrXMLReader*& xml)
@@ -2139,9 +2143,9 @@ RegisterStrategy StrategyAtIssueAssetType::reg("@issueAssetType",
 class StrategyQueryAssetTypes : public OTMessageStrategy
 {
 public:
-    virtual OTString writeXml(OTMessage& m)
+    virtual OTString writeXml(StringWriter& sw, OTMessage& m)
     {
-        OTString result;
+        StringWriter& result = sw;
         result.Concatenate("<%s\n" // Command
                            " nymID=\"%s\"\n"
                            " serverID=\"%s\"\n"
@@ -2155,7 +2159,7 @@ public:
                                m.m_ascPayload.Get());
 
         result.Concatenate("</%s>\n\n", m.m_strCommand.Get());
-        return result;
+        return result.GetOTString();
     }
 
     int32_t processXml(OTMessage& m, irr::io::IrrXMLReader*& xml)
@@ -2193,9 +2197,9 @@ RegisterStrategy StrategyQueryAssetTypes::reg("queryAssetTypes",
 class StrategyAtQueryAssetTypes : public OTMessageStrategy
 {
 public:
-    virtual OTString writeXml(OTMessage& m)
+    virtual OTString writeXml(StringWriter& sw, OTMessage& m)
     {
-        OTString result;
+        StringWriter& result = sw;
         result.Concatenate("<%s\n" // Command
                            " requestNum=\"%s\"\n"
                            " success=\"%s\"\n"
@@ -2215,7 +2219,7 @@ public:
                                m.m_ascPayload.Get());
 
         result.Concatenate("</%s>\n\n", m.m_strCommand.Get());
-        return result;
+        return result.GetOTString();
     }
 
     int32_t processXml(OTMessage& m, irr::io::IrrXMLReader*& xml)
@@ -2287,9 +2291,9 @@ RegisterStrategy StrategyAtQueryAssetTypes::reg(
 class StrategyIssueBasket : public OTMessageStrategy
 {
 public:
-    virtual OTString writeXml(OTMessage& m)
+    virtual OTString writeXml(StringWriter& sw, OTMessage& m)
     {
-        OTString result;
+        StringWriter& result = sw;
         result.Concatenate("<%s\n" // Command
                            " nymID=\"%s\"\n"
                            " serverID=\"%s\"\n"
@@ -2303,7 +2307,7 @@ public:
                                m.m_ascPayload.Get());
 
         result.Concatenate("</%s>\n\n", m.m_strCommand.Get());
-        return result;
+        return result.GetOTString();
     }
 
     int32_t processXml(OTMessage& m, irr::io::IrrXMLReader*& xml)
@@ -2352,9 +2356,9 @@ RegisterStrategy StrategyIssueBasket::reg("issueBasket",
 class StrategyAtIssueBasket : public OTMessageStrategy
 {
 public:
-    virtual OTString writeXml(OTMessage& m)
+    virtual OTString writeXml(StringWriter& sw, OTMessage& m)
     {
-        OTString result;
+        StringWriter& result = sw;
         result.Concatenate(
             "<%s\n" // Command
             " requestNum=\"%s\"\n"
@@ -2373,7 +2377,7 @@ public:
                                m.m_ascInReferenceTo.Get());
 
         result.Concatenate("</%s>\n\n", m.m_strCommand.Get());
-        return result;
+        return result.GetOTString();
     }
 
     int32_t processXml(OTMessage& m, irr::io::IrrXMLReader*& xml)
@@ -2429,9 +2433,9 @@ RegisterStrategy StrategyAtIssueBasket::reg("@issueBasket",
 class StrategyCreateAccount : public OTMessageStrategy
 {
 public:
-    virtual OTString writeXml(OTMessage& m)
+    virtual OTString writeXml(StringWriter& sw, OTMessage& m)
     {
-        OTString result;
+        StringWriter& result = sw;
         result.Concatenate("<%s\n" // Command
                            " nymID=\"%s\"\n"
                            " serverID=\"%s\"\n"
@@ -2446,7 +2450,7 @@ public:
         // m.m_strAssetID.GetLength(),  m.m_strAssetID.Get());
 
         result.Concatenate("</%s>\n\n", m.m_strCommand.Get());
-        return result;
+        return result.GetOTString();
     }
 
     int32_t processXml(OTMessage& m, irr::io::IrrXMLReader*& xml)
@@ -2474,9 +2478,9 @@ RegisterStrategy StrategyCreateAccount::reg("createAccount",
 class StrategyAtCreateAccount : public OTMessageStrategy
 {
 public:
-    virtual OTString writeXml(OTMessage& m)
+    virtual OTString writeXml(StringWriter& sw, OTMessage& m)
     {
-        OTString result;
+        StringWriter& result = sw;
         result.Concatenate("<%s\n" // Command
                            " requestNum=\"%s\"\n"
                            " success=\"%s\"\n"
@@ -2498,7 +2502,7 @@ public:
                                m.m_ascPayload.Get());
 
         result.Concatenate("</%s>\n\n", m.m_strCommand.Get());
-        return result;
+        return result.GetOTString();
     }
 
     int32_t processXml(OTMessage& m, irr::io::IrrXMLReader*& xml)
@@ -2575,9 +2579,9 @@ RegisterStrategy StrategyAtCreateAccount::reg("@createAccount",
 class StrategyGetBoxReceipt : public OTMessageStrategy
 {
 public:
-    virtual OTString writeXml(OTMessage& m)
+    virtual OTString writeXml(StringWriter& sw, OTMessage& m)
     {
-        OTString result;
+        StringWriter& result = sw;
         result.Concatenate(
             "<%s\n" // Command
             " nymID=\"%s\"\n"
@@ -2596,7 +2600,7 @@ public:
             m.m_strAcctID.Get());
 
         result.Concatenate("</%s>\n\n", m.m_strCommand.Get());
-        return result;
+        return result.GetOTString();
     }
 
     int32_t processXml(OTMessage& m, irr::io::IrrXMLReader*& xml)
@@ -2648,9 +2652,9 @@ RegisterStrategy StrategyGetBoxReceipt::reg("getBoxReceipt",
 class StrategyAtGetBoxReceipt : public OTMessageStrategy
 {
 public:
-    virtual OTString writeXml(OTMessage& m)
+    virtual OTString writeXml(StringWriter& sw, OTMessage& m)
     {
-        OTString result;
+        StringWriter& result = sw;
         result.Concatenate(
             "<%s\n" // Command
             " requestNum=\"%s\"\n"
@@ -2679,7 +2683,7 @@ public:
                                m.m_ascPayload.Get());
 
         result.Concatenate("</%s>\n\n", m.m_strCommand.Get());
-        return result;
+        return result.GetOTString();
     }
 
     int32_t processXml(OTMessage& m, irr::io::IrrXMLReader*& xml)
@@ -2773,9 +2777,9 @@ RegisterStrategy StrategyAtGetBoxReceipt::reg("@getBoxReceipt",
 class StrategyDeleteAssetAccount : public OTMessageStrategy
 {
 public:
-    virtual OTString writeXml(OTMessage& m)
+    virtual OTString writeXml(StringWriter& sw, OTMessage& m)
     {
-        OTString result;
+        StringWriter& result = sw;
         result.Concatenate("<%s\n" // Command
                            " nymID=\"%s\"\n"
                            " serverID=\"%s\"\n"
@@ -2787,7 +2791,7 @@ public:
                            m.m_strAcctID.Get());
 
         result.Concatenate("</%s>\n\n", m.m_strCommand.Get());
-        return result;
+        return result.GetOTString();
     }
 
     int32_t processXml(OTMessage& m, irr::io::IrrXMLReader*& xml)
@@ -2815,9 +2819,9 @@ RegisterStrategy StrategyDeleteAssetAccount::reg(
 class StrategyAtDeleteAssetAccount : public OTMessageStrategy
 {
 public:
-    virtual OTString writeXml(OTMessage& m)
+    virtual OTString writeXml(StringWriter& sw, OTMessage& m)
     {
-        OTString result;
+        StringWriter& result = sw;
         result.Concatenate("<%s\n" // Command
                            " requestNum=\"%s\"\n"
                            " success=\"%s\"\n"
@@ -2835,7 +2839,7 @@ public:
                                m.m_ascInReferenceTo.Get());
 
         result.Concatenate("</%s>\n\n", m.m_strCommand.Get());
-        return result;
+        return result.GetOTString();
     }
 
     int32_t processXml(OTMessage& m, irr::io::IrrXMLReader*& xml)
@@ -2894,9 +2898,9 @@ RegisterStrategy StrategyAtDeleteAssetAccount::reg(
 class StrategyNotarizeTransactions : public OTMessageStrategy
 {
 public:
-    virtual OTString writeXml(OTMessage& m)
+    virtual OTString writeXml(StringWriter& sw, OTMessage& m)
     {
-        OTString result;
+        StringWriter& result = sw;
         // the Payload contains an ascii-armored OTLedger object.
         result.Concatenate("<%s\n" // Command
                            " nymID=\"%s\"\n"
@@ -2916,7 +2920,7 @@ public:
                                m.m_ascPayload.Get());
 
         result.Concatenate("</%s>\n\n", m.m_strCommand.Get());
-        return result;
+        return result.GetOTString();
     }
 
     int32_t processXml(OTMessage& m, irr::io::IrrXMLReader*& xml)
@@ -2959,9 +2963,9 @@ RegisterStrategy StrategyNotarizeTransactions::reg(
 class StrategyAtNotarizeTransactions : public OTMessageStrategy
 {
 public:
-    virtual OTString writeXml(OTMessage& m)
+    virtual OTString writeXml(StringWriter& sw, OTMessage& m)
     {
-        OTString result;
+        StringWriter& result = sw;
         // the Payload contains an ascii-armored OTLedger object.
         result.Concatenate("<%s\n" // Command
                            " requestNum=\"%s\"\n"
@@ -2986,7 +2990,7 @@ public:
                                m.m_ascPayload.Get());
 
         result.Concatenate("</%s>\n\n", m.m_strCommand.Get());
-        return result;
+        return result.GetOTString();
     }
 
     int32_t processXml(OTMessage& m, irr::io::IrrXMLReader*& xml)
@@ -3063,9 +3067,9 @@ RegisterStrategy StrategyAtNotarizeTransactions::reg(
 class StrategyGetTransactionNum : public OTMessageStrategy
 {
 public:
-    virtual OTString writeXml(OTMessage& m)
+    virtual OTString writeXml(StringWriter& sw, OTMessage& m)
     {
-        OTString result;
+        StringWriter& result = sw;
         result.Concatenate("<%s\n" // Command
                            " nymID=\"%s\"\n"
                            " nymboxHash=\"%s\"\n"
@@ -3077,7 +3081,7 @@ public:
                            m.m_strRequestNum.Get());
 
         result.Concatenate("</%s>\n\n", m.m_strCommand.Get());
-        return result;
+        return result.GetOTString();
     }
 
     int32_t processXml(OTMessage& m, irr::io::IrrXMLReader*& xml)
@@ -3104,9 +3108,9 @@ RegisterStrategy StrategyGetTransactionNum::reg(
 class StrategyAtGetTransactionNum : public OTMessageStrategy
 {
 public:
-    virtual OTString writeXml(OTMessage& m)
+    virtual OTString writeXml(StringWriter& sw, OTMessage& m)
     {
-        OTString result;
+        StringWriter& result = sw;
         result.Concatenate("<%s\n" // Command
                            " requestNum=\"%s\"\n"
                            " success=\"%s\"\n"
@@ -3120,7 +3124,7 @@ public:
                            m.m_strServerID.Get());
 
         result.Concatenate("</%s>\n\n", m.m_strCommand.Get());
-        return result;
+        return result.GetOTString();
     }
 
     int32_t processXml(OTMessage& m, irr::io::IrrXMLReader*& xml)
@@ -3149,9 +3153,9 @@ RegisterStrategy StrategyAtGetTransactionNum::reg(
 class StrategyGetNymbox : public OTMessageStrategy
 {
 public:
-    virtual OTString writeXml(OTMessage& m)
+    virtual OTString writeXml(StringWriter& sw, OTMessage& m)
     {
-        OTString result;
+        StringWriter& result = sw;
         result.Concatenate("<%s\n" // Command
                            " nymID=\"%s\"\n"
                            " serverID=\"%s\"\n"
@@ -3161,7 +3165,7 @@ public:
                            m.m_strServerID.Get(), m.m_strRequestNum.Get());
 
         result.Concatenate("</%s>\n\n", m.m_strCommand.Get());
-        return result;
+        return result.GetOTString();
     }
 
     int32_t processXml(OTMessage& m, irr::io::IrrXMLReader*& xml)
@@ -3185,9 +3189,9 @@ RegisterStrategy StrategyGetNymbox::reg("getNymbox", new StrategyGetNymbox());
 class StrategyAtGetNymbox : public OTMessageStrategy
 {
 public:
-    virtual OTString writeXml(OTMessage& m)
+    virtual OTString writeXml(StringWriter& sw, OTMessage& m)
     {
-        OTString result;
+        StringWriter& result = sw;
         // the Payload contains an ascii-armored OTLedger object.
         result.Concatenate("<%s\n" // Command
                            " requestNum=\"%s\"\n"
@@ -3212,7 +3216,7 @@ public:
                                m.m_ascPayload.Get());
 
         result.Concatenate("</%s>\n\n", m.m_strCommand.Get());
-        return result;
+        return result.GetOTString();
     }
 
     int32_t processXml(OTMessage& m, irr::io::IrrXMLReader*& xml)
@@ -3263,9 +3267,9 @@ RegisterStrategy StrategyAtGetNymbox::reg("@getNymbox",
 class StrategyGetInbox : public OTMessageStrategy
 {
 public:
-    virtual OTString writeXml(OTMessage& m)
+    virtual OTString writeXml(StringWriter& sw, OTMessage& m)
     {
-        OTString result;
+        StringWriter& result = sw;
         // the Payload contains an ascii-armored OTLedger object.
         result.Concatenate("<%s\n" // Command
                            " nymID=\"%s\"\n"
@@ -3278,7 +3282,7 @@ public:
                            m.m_strRequestNum.Get());
 
         result.Concatenate("</%s>\n\n", m.m_strCommand.Get());
-        return result;
+        return result.GetOTString();
     }
 
     int32_t processXml(OTMessage& m, irr::io::IrrXMLReader*& xml)
@@ -3304,9 +3308,9 @@ RegisterStrategy StrategyGetInbox::reg("getInbox", new StrategyGetInbox());
 class StrategyAtGetInbox : public OTMessageStrategy
 {
 public:
-    virtual OTString writeXml(OTMessage& m)
+    virtual OTString writeXml(StringWriter& sw, OTMessage& m)
     {
-        OTString result;
+        StringWriter& result = sw;
         // the Payload contains an ascii-armored OTLedger object.
         result.Concatenate("<%s\n" // Command
                            " requestNum=\"%s\"\n"
@@ -3332,7 +3336,7 @@ public:
                                m.m_ascPayload.Get());
 
         result.Concatenate("</%s>\n\n", m.m_strCommand.Get());
-        return result;
+        return result.GetOTString();
     }
 
     int32_t processXml(OTMessage& m, irr::io::IrrXMLReader*& xml)
@@ -3384,9 +3388,9 @@ RegisterStrategy StrategyAtGetInbox::reg("@getInbox", new StrategyAtGetInbox());
 class StrategyGetOutbox : public OTMessageStrategy
 {
 public:
-    virtual OTString writeXml(OTMessage& m)
+    virtual OTString writeXml(StringWriter& sw, OTMessage& m)
     {
-        OTString result;
+        StringWriter& result = sw;
         // the Payload contains an ascii-armored OTLedger object.
         result.Concatenate("<%s\n" // Command
                            " nymID=\"%s\"\n"
@@ -3399,7 +3403,7 @@ public:
                            m.m_strRequestNum.Get());
 
         result.Concatenate("</%s>\n\n", m.m_strCommand.Get());
-        return result;
+        return result.GetOTString();
     }
 
     int32_t processXml(OTMessage& m, irr::io::IrrXMLReader*& xml)
@@ -3425,9 +3429,9 @@ RegisterStrategy StrategyGetOutbox::reg("getOutbox", new StrategyGetOutbox());
 class StrategyAtGetOutbox : public OTMessageStrategy
 {
 public:
-    virtual OTString writeXml(OTMessage& m)
+    virtual OTString writeXml(StringWriter& sw, OTMessage& m)
     {
-        OTString result;
+        StringWriter& result = sw;
         // the Payload contains an ascii-armored OTLedger object.
         result.Concatenate("<%s\n" // Command
                            " requestNum=\"%s\"\n"
@@ -3453,7 +3457,7 @@ public:
                                m.m_ascPayload.Get());
 
         result.Concatenate("</%s>\n\n", m.m_strCommand.Get());
-        return result;
+        return result.GetOTString();
     }
 
     int32_t processXml(OTMessage& m, irr::io::IrrXMLReader*& xml)
@@ -3506,9 +3510,9 @@ RegisterStrategy StrategyAtGetOutbox::reg("@getOutbox",
 class StrategyGetAccount : public OTMessageStrategy
 {
 public:
-    virtual OTString writeXml(OTMessage& m)
+    virtual OTString writeXml(StringWriter& sw, OTMessage& m)
     {
-        OTString result;
+        StringWriter& result = sw;
         result.Concatenate("<%s\n" // Command
                            " nymID=\"%s\"\n"
                            " serverID=\"%s\"\n"
@@ -3520,7 +3524,7 @@ public:
                            m.m_strRequestNum.Get());
 
         result.Concatenate("</%s>\n\n", m.m_strCommand.Get());
-        return result;
+        return result.GetOTString();
     }
 
     int32_t processXml(OTMessage& m, irr::io::IrrXMLReader*& xml)
@@ -3547,9 +3551,9 @@ RegisterStrategy StrategyGetAccount::reg("getAccount",
 class StrategyAtGetAccount : public OTMessageStrategy
 {
 public:
-    virtual OTString writeXml(OTMessage& m)
+    virtual OTString writeXml(StringWriter& sw, OTMessage& m)
     {
-        OTString result;
+        StringWriter& result = sw;
         // the Payload contains an ascii-armored OTAccount object.
         result.Concatenate("<%s\n" // Command
                            " requestNum=\"%s\"\n"
@@ -3574,7 +3578,7 @@ public:
                                m.m_ascPayload.Get());
 
         result.Concatenate("</%s>\n\n", m.m_strCommand.Get());
-        return result;
+        return result.GetOTString();
     }
 
     int32_t processXml(OTMessage& m, irr::io::IrrXMLReader*& xml)
@@ -3626,9 +3630,9 @@ RegisterStrategy StrategyAtGetAccount::reg("@getAccount",
 class StrategyGetAccountFiles : public OTMessageStrategy
 {
 public:
-    virtual OTString writeXml(OTMessage& m)
+    virtual OTString writeXml(StringWriter& sw, OTMessage& m)
     {
-        OTString result;
+        StringWriter& result = sw;
         result.Concatenate("<%s\n" // Command
                            " nymID=\"%s\"\n"
                            " serverID=\"%s\"\n"
@@ -3640,7 +3644,7 @@ public:
                            m.m_strRequestNum.Get());
 
         result.Concatenate("</%s>\n\n", m.m_strCommand.Get());
-        return result;
+        return result.GetOTString();
     }
 
     int32_t processXml(OTMessage& m, irr::io::IrrXMLReader*& xml)
@@ -3667,9 +3671,9 @@ RegisterStrategy StrategyGetAccountFiles::reg("getAccountFiles",
 class StrategyAtGetAccountFiles : public OTMessageStrategy
 {
 public:
-    virtual OTString writeXml(OTMessage& m)
+    virtual OTString writeXml(StringWriter& sw, OTMessage& m)
     {
-        OTString result;
+        StringWriter& result = sw;
         // the Payload contains a STRING_MAP containing the OTAccount,
         // plus the inbox and outbox for that acct..
         //
@@ -3700,7 +3704,7 @@ public:
                                m.m_ascPayload.Get());
 
         result.Concatenate("</%s>\n\n", m.m_strCommand.Get());
-        return result;
+        return result.GetOTString();
     }
 
     int32_t processXml(OTMessage& m, irr::io::IrrXMLReader*& xml)
@@ -3754,9 +3758,9 @@ RegisterStrategy StrategyAtGetAccountFiles::reg(
 class StrategyGetContract : public OTMessageStrategy
 {
 public:
-    virtual OTString writeXml(OTMessage& m)
+    virtual OTString writeXml(StringWriter& sw, OTMessage& m)
     {
-        OTString result;
+        StringWriter& result = sw;
         result.Concatenate("<%s\n" // Command
                            " nymID=\"%s\"\n"
                            " serverID=\"%s\"\n"
@@ -3768,7 +3772,7 @@ public:
                            m.m_strRequestNum.Get());
 
         result.Concatenate("</%s>\n\n", m.m_strCommand.Get());
-        return result;
+        return result.GetOTString();
     }
 
     int32_t processXml(OTMessage& m, irr::io::IrrXMLReader*& xml)
@@ -3795,9 +3799,9 @@ RegisterStrategy StrategyGetContract::reg("getContract",
 class StrategyAtGetContract : public OTMessageStrategy
 {
 public:
-    virtual OTString writeXml(OTMessage& m)
+    virtual OTString writeXml(StringWriter& sw, OTMessage& m)
     {
-        OTString result;
+        StringWriter& result = sw;
         // the Payload contains an ascii-armored OTAssetContract object.
         result.Concatenate("<%s\n" // Command
                            " requestNum=\"%s\"\n"
@@ -3822,7 +3826,7 @@ public:
                                m.m_ascPayload.Get());
 
         result.Concatenate("</%s>\n\n", m.m_strCommand.Get());
-        return result;
+        return result.GetOTString();
     }
 
     int32_t processXml(OTMessage& m, irr::io::IrrXMLReader*& xml)
@@ -3874,9 +3878,9 @@ RegisterStrategy StrategyAtGetContract::reg("@getContract",
 class StrategyGetMint : public OTMessageStrategy
 {
 public:
-    virtual OTString writeXml(OTMessage& m)
+    virtual OTString writeXml(StringWriter& sw, OTMessage& m)
     {
-        OTString result;
+        StringWriter& result = sw;
         result.Concatenate("<%s\n" // Command
                            " nymID=\"%s\"\n"
                            " serverID=\"%s\"\n"
@@ -3888,7 +3892,7 @@ public:
                            m.m_strRequestNum.Get());
 
         result.Concatenate("</%s>\n\n", m.m_strCommand.Get());
-        return result;
+        return result.GetOTString();
     }
 
     int32_t processXml(OTMessage& m, irr::io::IrrXMLReader*& xml)
@@ -3914,9 +3918,9 @@ RegisterStrategy StrategyGetMint::reg("getMint", new StrategyGetMint());
 class StrategyAtGetMint : public OTMessageStrategy
 {
 public:
-    virtual OTString writeXml(OTMessage& m)
+    virtual OTString writeXml(StringWriter& sw, OTMessage& m)
     {
-        OTString result;
+        StringWriter& result = sw;
         // the Payload contains an ascii-armored OTMint object.
         result.Concatenate("<%s\n" // Command
                            " requestNum=\"%s\"\n"
@@ -3940,7 +3944,7 @@ public:
             result.Concatenate("<mint>\n%s</mint>\n\n", m.m_ascPayload.Get());
 
         result.Concatenate("</%s>\n\n", m.m_strCommand.Get());
-        return result;
+        return result.GetOTString();
     }
 
     int32_t processXml(OTMessage& m, irr::io::IrrXMLReader*& xml)
@@ -3991,9 +3995,9 @@ RegisterStrategy StrategyAtGetMint::reg("@getMint", new StrategyAtGetMint());
 class StrategyProcessInbox : public OTMessageStrategy
 {
 public:
-    virtual OTString writeXml(OTMessage& m)
+    virtual OTString writeXml(StringWriter& sw, OTMessage& m)
     {
-        OTString result;
+        StringWriter& result = sw;
         // the Payload contains an ascii-armored OTLedger object.
         result.Concatenate("<%s\n" // Command
                            " nymID=\"%s\"\n"
@@ -4013,7 +4017,7 @@ public:
                                m.m_ascPayload.Get());
 
         result.Concatenate("</%s>\n\n", m.m_strCommand.Get());
-        return result;
+        return result.GetOTString();
     }
 
     int32_t processXml(OTMessage& m, irr::io::IrrXMLReader*& xml)
@@ -4056,9 +4060,9 @@ RegisterStrategy StrategyProcessInbox::reg("processInbox",
 class StrategyAtProcessInbox : public OTMessageStrategy
 {
 public:
-    virtual OTString writeXml(OTMessage& m)
+    virtual OTString writeXml(StringWriter& sw, OTMessage& m)
     {
-        OTString result;
+        StringWriter& result = sw;
         // the Payload contains an ascii-armored OTLedger object.
         result.Concatenate("<%s\n" // Command
                            " requestNum=\"%s\"\n"
@@ -4083,7 +4087,7 @@ public:
                                m.m_ascPayload.Get());
 
         result.Concatenate("</%s>\n\n", m.m_strCommand.Get());
-        return result;
+        return result.GetOTString();
     }
 
     int32_t processXml(OTMessage& m, irr::io::IrrXMLReader*& xml)
@@ -4157,9 +4161,9 @@ RegisterStrategy StrategyAtProcessInbox::reg("@processInbox",
 class StrategyProcessNymbox : public OTMessageStrategy
 {
 public:
-    virtual OTString writeXml(OTMessage& m)
+    virtual OTString writeXml(StringWriter& sw, OTMessage& m)
     {
-        OTString result;
+        StringWriter& result = sw;
         // the Payload contains an ascii-armored OTLedger object.
         result.Concatenate("<%s\n" // Command
                            " nymID=\"%s\"\n"
@@ -4178,7 +4182,7 @@ public:
                                m.m_ascPayload.Get());
 
         result.Concatenate("</%s>\n\n", m.m_strCommand.Get());
-        return result;
+        return result.GetOTString();
     }
 
     int32_t processXml(OTMessage& m, irr::io::IrrXMLReader*& xml)
@@ -4219,9 +4223,9 @@ RegisterStrategy StrategyProcessNymbox::reg("processNymbox",
 class StrategyAtProcessNymbox : public OTMessageStrategy
 {
 public:
-    virtual OTString writeXml(OTMessage& m)
+    virtual OTString writeXml(StringWriter& sw, OTMessage& m)
     {
-        OTString result;
+        StringWriter& result = sw;
         // the Payload contains an ascii-armored OTLedger object.
         result.Concatenate("<%s\n" // Command
                            " requestNum=\"%s\"\n"
@@ -4244,7 +4248,7 @@ public:
                                m.m_ascPayload.Get());
 
         result.Concatenate("</%s>\n\n", m.m_strCommand.Get());
-        return result;
+        return result.GetOTString();
     }
 
     int32_t processXml(OTMessage& m, irr::io::IrrXMLReader*& xml)
@@ -4317,9 +4321,9 @@ RegisterStrategy StrategyAtProcessNymbox::reg("@processNymbox",
 class StrategyTriggerClause : public OTMessageStrategy
 {
 public:
-    virtual OTString writeXml(OTMessage& m)
+    virtual OTString writeXml(StringWriter& sw, OTMessage& m)
     {
-        OTString result;
+        StringWriter& result = sw;
         result.Concatenate(
             "<%s\n" // Command
             " nymID=\"%s\"\n"
@@ -4341,7 +4345,7 @@ public:
                                m.m_ascPayload.Get());
 
         result.Concatenate("</%s>\n\n", m.m_strCommand.Get());
-        return result;
+        return result.GetOTString();
     }
 
     int32_t processXml(OTMessage& m, irr::io::IrrXMLReader*& xml)
@@ -4392,9 +4396,9 @@ RegisterStrategy StrategyTriggerClause::reg("triggerClause",
 class StrategyAtTriggerClause : public OTMessageStrategy
 {
 public:
-    virtual OTString writeXml(OTMessage& m)
+    virtual OTString writeXml(StringWriter& sw, OTMessage& m)
     {
-        OTString result;
+        StringWriter& result = sw;
         // the Payload contains an ascii-armored OTMint object.
         result.Concatenate("<%s\n" // Command
                            " requestNum=\"%s\"\n"
@@ -4411,7 +4415,7 @@ public:
                                m.m_ascInReferenceTo.Get());
 
         result.Concatenate("</%s>\n\n", m.m_strCommand.Get());
-        return result;
+        return result.GetOTString();
     }
 
     int32_t processXml(OTMessage& m, irr::io::IrrXMLReader*& xml)
@@ -4453,9 +4457,9 @@ RegisterStrategy StrategyAtTriggerClause::reg("@triggerClause",
 class StrategyGetMarketList : public OTMessageStrategy
 {
 public:
-    virtual OTString writeXml(OTMessage& m)
+    virtual OTString writeXml(StringWriter& sw, OTMessage& m)
     {
-        OTString result;
+        StringWriter& result = sw;
         result.Concatenate("<%s\n"
                            " requestNum=\"%s\"\n"
                            " nymID=\"%s\"\n"
@@ -4465,7 +4469,7 @@ public:
                            m.m_strNymID.Get(), m.m_strServerID.Get());
 
         result.Concatenate("</%s>\n\n", m.m_strCommand.Get());
-        return result;
+        return result.GetOTString();
     }
 
     virtual int32_t processXml(OTMessage& m, irr::io::IrrXMLReader*& xml)
@@ -4544,9 +4548,9 @@ public:
         return 1;
     }
 
-    virtual OTString writeXml(OTMessage& m)
+    virtual OTString writeXml(StringWriter& sw, OTMessage& m)
     {
-        OTString result;
+        StringWriter& result = sw;
         result.Concatenate("<%s\n"
                            " requestNum=\"%s\"\n"
                            " success=\"%s\"\n"
@@ -4568,7 +4572,7 @@ public:
                                m.m_ascInReferenceTo.Get());
 
         result.Concatenate("</%s>\n\n", m.m_strCommand.Get());
-        return result;
+        return result.GetOTString();
     }
 
     static RegisterStrategy reg;

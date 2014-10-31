@@ -143,6 +143,7 @@
 namespace opentxs
 {
 
+class StringWriter;
 class OTPasswordData;
 class OTPseudonym;
 class OTMessage;
@@ -152,7 +153,7 @@ class OTMessageStrategy
 public:
     virtual int32_t processXml(OTMessage& message,
                                irr::io::IrrXMLReader*& xml) = 0;
-    virtual OTString writeXml(OTMessage& message) = 0;
+    virtual OTString writeXml(StringWriter& sw, OTMessage& message) = 0;
     virtual ~OTMessageStrategy();
 
     void processXmlSuccess(OTMessage& m, irr::io::IrrXMLReader*& xml);
@@ -186,7 +187,7 @@ protected:
     bool m_bIsSigned;
 
 private:
-    bool updateContentsByType();
+    bool updateContentsByType(StringWriter& sw);
 
     int32_t processXmlNodeAckReplies(OTMessage& m, irr::io::IrrXMLReader*& xml);
     int32_t processXmlNodeAcknowledgedReplies(OTMessage& m,

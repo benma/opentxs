@@ -55,6 +55,7 @@ set(cxx-sources
   crypto/OTSignedFile.cpp
   OTStorage.cpp
   OTString.cpp
+  StringWriter.cpp
   OTStringXML.cpp
   crypto/OTSubcredential.cpp
   crypto/OTSubkey.cpp
