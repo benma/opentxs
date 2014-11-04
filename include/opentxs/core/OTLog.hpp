@@ -161,7 +161,6 @@ namespace opentxs
 
 class OTData;
 
-
 typedef std::deque<String*> dequeOfStrings;
 
 class OTLogStream;
@@ -334,7 +333,7 @@ public:
 
 std::string trace_to_string(const char* input);
 std::string trace_to_string(const std::string& input);
-std::string trace_to_string(const OTString& input);
+std::string trace_to_string(const String& input);
 std::string trace_to_string(const OTData& input);
 
 template <class I, class O>

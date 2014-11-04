@@ -1337,7 +1337,7 @@ std::string trace_to_string(const std::string& input)
         reinterpret_cast<const uint8_t*>(input.c_str()), input.size(), false);
 }
 
-std::string trace_to_string(const OTString& input)
+std::string trace_to_string(const String& input)
 {
     return trace_to_string(std::string(input.Get()));
 }
