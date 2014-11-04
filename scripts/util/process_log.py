@@ -54,18 +54,19 @@ class Line:
 #        print(result)
         self.tree = result
 
-    def generateHtml(self, bgcolor=None):
-        html = '<table border="1" '
+    def generateHtml(self, bgcolor=None, nested=0):
+        html = '<a href="#" class="toggler toggler-%s">toggle [-]</a><br/>' % nested
+        html += '<table border="1" '
         if bgcolor:
             html += 'bgcolor="%s" ' % bgcolor
         html += '>'
         for key in sorted(self.tree.keys()):
             html += "<tr>"
-            html += "<td>" + html_escape(self.input[key[0]:key[1]+1]) + "</td>"
-            html += "<td>"
+            html += ("""<td class="nested nested-%d"><span>""" % nested) + html_escape(self.input[key[0]:key[1]+1]) + "</span></td>"
+            html += """<td class="nest nest-%d">""" % nested
             l = self.tree[key]
             if l:
-                html += l.generateHtml()
+                html += l.generateHtml(nested=nested+1)
             html += "</td>"
             if l:
                 html += "<td>" + l.link + "</td>"
@@ -121,7 +122,40 @@ if len(sys.argv) > 2:
     messages.sort(key=lambda x: x.time)
 
 print "<html>\n"
-for m in messages:
+print """
+<head>
+  <script src="http://ajax.googleapis.com/ajax/libs/prototype/1.7.2.0/prototype.js"></script>
+  <script>
+    $(document).observe("dom:loaded", function() {
+    $$("a.toggler").each(function(el) {
+    el.observe("click", function() {
+    var tbl = el.next("table");
+    if(tbl.visible()) {
+    el.innerHTML = "toggle [+]";
+    tbl.hide();
+} else {
+el.innerHTML = "toggle [-]";
+tbl.show();
+}
+    return false;
+    });
+    });
+    });
+  </script>
+
+  <style>
+    td { vertical-align: top; }
+    td.nested-1>span { 
+    display: inline-block;
+    max-height: 100px;
+    overflow: auto;
+    }
+  </style>
+</head>
+<body>
+"""
+for i, m in enumerate(messages):
+    sys.stderr.write("%d - %s\n" % (i, len(messages)))
     print m.generateHtml()
     print "\n"
-print "\n<html>\n"
+print "\n</body></html>\n"
