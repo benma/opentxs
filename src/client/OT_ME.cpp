@@ -370,14 +370,14 @@ std::string OT_ME::register_nym(const std::string& NOTARY_ID,
     if (1 == nSuccess) {
         Utility MsgUtil;
 
-        // Use the getRequestNumber command, thus insuring that the request
-        // number is in sync.
-        if (1 != MsgUtil.getRequestNumber(NOTARY_ID, NYM_ID)) {
-            otOut << "\n Succeeded in register_nym, but strange: "
-                     "then failed calling getRequestNumber, to sync the "
-                     "request number for the first time.\n";
-            return "";
-        }
+        // // Use the getRequestNumber command, thus insuring that the request
+        // // number is in sync.
+        // if (1 != MsgUtil.getRequestNumber(NOTARY_ID, NYM_ID)) {
+        //     otOut << "\n Succeeded in register_nym, but strange: "
+        //              "then failed calling getRequestNumber, to sync the "
+        //              "request number for the first time.\n";
+        //     return "";
+        // }
     }
     else {
         // maybe an invalid server ID or the server contract isn't available
